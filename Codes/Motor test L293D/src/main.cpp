@@ -26,23 +26,23 @@ void setup() {
 void loop() {
   unsigned long currentTime = millis();
   if (currentTime - lastTime >= interval) {
-    if (motorsOn) {
-      // Turn motors off
-      motor1.setSpeed(0);
-      motor1.run(RELEASE);
-      motor2.setSpeed(0);
-      motor2.run(RELEASE);
-      motorsOn = false;
-      Serial.println("Motors off");
-    } else {
+    // if (motorsOn) {
+    //   // Turn motors off
+    //   motor1.setSpeed(0);
+    //   motor1.run(RELEASE);
+    //   motor2.setSpeed(0);
+    //   motor2.run(RELEASE);
+    //   motorsOn = false;
+    //   Serial.println("Motors off");
+    // } else {
       // Turn motors on
-      motor1.setSpeed(192);
+      motor1.setSpeed(224);
       motor1.run(FORWARD);
-      motor2.setSpeed(250.5);
+      motor2.setSpeed(246.5);
       motor2.run(FORWARD);
       motorsOn = true;
       Serial.println("Motors on");
-    }
+    // }
     lastTime = currentTime;
 
     if(millis()-lastMilli > 50){ 
