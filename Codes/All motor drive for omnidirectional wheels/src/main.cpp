@@ -6,7 +6,7 @@
 AF_DCMotor motor1(1); // Motor 1 on the Adafruit Motor Shield
 AF_DCMotor motor2(2); // Motor 2 on the Adafruit Motor Shield
 AF_DCMotor motor3(3); // Motor 3 on the Adafruit Motor Shield
-AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
+AF_DCMotor motor4(4  ); // Motor 4 on the Adafruit Motor Shield
 Encoders leftEncoder(A8, A9); // Create an Encoder object name leftEncoder, using digitalpin 2 & 3
 Encoders rightEncoder(A10, A11); // Encoder object name rightEncoder using analog pin A0 and A1
 
@@ -16,7 +16,7 @@ const unsigned long interval = 1000; // Interval for turning motors on and off (
 unsigned long lastMilli = 0;
 
 unsigned long lastTime = 0;
-bool motorsOn = true;
+int step = 1;
 
 class Move {
   public:
@@ -67,21 +67,42 @@ void setup() {
   motor4.setSpeed(pwmValueB);
 }
 
+
+
 void loop() {
   unsigned long currentTime = millis();
   if (currentTime - lastTime >= interval) {
-    if (motorsOn) {
+    if (step == 1) {
       // Turn motors off
-      move.stop();
-      motorsOn = false;
-      Serial.println("Motors off");
-    } else {
-      // Turn motors on
       move.forward();
-      motorsOn = true;
       Serial.println("Motors on");
-    }
+    } else if (step == 2) {
+      // Turn motors on
+      move.stop();
+      Serial.println("Motors off");
+    } else if (step == 3){
+      move.backward();
+      Serial.println("Motors back");
+    } else if (step == 4) {
+      move.stop();
+      Serial.println("Motors off");
+    } else if (step == 5) {
+      move.left();
+      Serial.println("Motors left");
+    }else if (step == 6) {
+      move.stop();
+      Serial.println("Motors off");
+    } else if (step == 7) {
+      move.right();
+      Serial.println("Motors right");
+    } else if (step == 8) {
+      move.stop();
+      Serial.println("Motors off");}
+
     lastTime = currentTime;
+    if (step < 8) {
+      step ++;
+    } 
   }
 
   if (millis() - lastMilli > 50) {
