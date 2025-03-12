@@ -35,16 +35,16 @@ class Move {
     }
 
     void left() {
-      motor1.run(BACKWARD);
+      motor1.run(FORWARD);
       motor2.run(FORWARD);
-      motor3.run(FORWARD);
+      motor3.run(BACKWARD);
       motor4.run(BACKWARD);
     }
 
     void right() {
-      motor1.run(FORWARD);
+      motor1.run(BACKWARD);
       motor2.run(BACKWARD);
-      motor3.run(BACKWARD);
+      motor3.run(FORWARD);
       motor4.run(FORWARD);
     }
 
