@@ -6,9 +6,11 @@
 AF_DCMotor motor1(1); // Motor 1 on the Adafruit Motor Shield
 AF_DCMotor motor2(2); // Motor 2 on the Adafruit Motor Shield
 AF_DCMotor motor3(3); // Motor 3 on the Adafruit Motor Shield
-AF_DCMotor motor4(4  ); // Motor 4 on the Adafruit Motor Shield
-Encoders leftEncoder(A8, A9); // Create an Encoder object name leftEncoder, using digitalpin 2 & 3
-Encoders rightEncoder(A10, A11); // Encoder object name rightEncoder using analog pin A0 and A1
+AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
+Encoders leftEncoder1(A8, A9); // Encoder for motor1
+Encoders leftEncoder2(A10, A11); // Encoder for motor2
+Encoders rightEncoder1(A12, A13); // Encoder for motor3
+Encoders rightEncoder2(A14, A15); // Encoder for motor4
 
 const int pwmValueA = 225; // Maximum PWM value (full speed)
 const int pwmValueB = 225; // Maximum PWM value (full speed)
@@ -54,6 +56,20 @@ class Move {
       motor3.run(RELEASE);
       motor4.run(RELEASE);
     }
+
+    void rotate(bool clockwise) {
+      if (clockwise) {
+        motor1.run(FORWARD);
+        motor2.run(BACKWARD);
+        motor3.run(FORWARD);
+        motor4.run(BACKWARD);
+      } else {
+        motor1.run(BACKWARD);
+        motor2.run(FORWARD);
+        motor3.run(BACKWARD);
+        motor4.run(FORWARD);
+      }
+    }
 };
 
 Move move;
@@ -67,20 +83,16 @@ void setup() {
   motor4.setSpeed(pwmValueB);
 }
 
-
-
 void loop() {
   unsigned long currentTime = millis();
   if (currentTime - lastTime >= interval) {
     if (step == 1) {
-      // Turn motors off
       move.forward();
       Serial.println("Motors on");
     } else if (step == 2) {
-      // Turn motors on
       move.stop();
       Serial.println("Motors off");
-    } else if (step == 3){
+    } else if (step == 3) {
       move.backward();
       Serial.println("Motors back");
     } else if (step == 4) {
@@ -89,7 +101,7 @@ void loop() {
     } else if (step == 5) {
       move.left();
       Serial.println("Motors left");
-    }else if (step == 6) {
+    } else if (step == 6) {
       move.stop();
       Serial.println("Motors off");
     } else if (step == 7) {
@@ -97,21 +109,40 @@ void loop() {
       Serial.println("Motors right");
     } else if (step == 8) {
       move.stop();
-      Serial.println("Motors off");}
+      Serial.println("Motors off");
+    } else if (step == 9) {
+      move.rotate(true); // Rotate clockwise
+      Serial.println("Motors rotate clockwise");
+    } else if (step == 10) {
+      move.stop();
+      Serial.println("Motors off");
+    } else if (step == 11) {
+      move.rotate(false); // Rotate counterclockwise
+      Serial.println("Motors rotate counterclockwise");
+    } else if (step == 12) {
+      move.stop();
+      Serial.println("Motors off");
+    }
 
     lastTime = currentTime;
-    if (step < 8) {
-      step ++;
-    } 
+    if (step < 12) {
+      step++;
+    }
   }
 
   if (millis() - lastMilli > 50) {
-    long currentLeftEncoderCount = leftEncoder.getEncoderCount();
-    long currentRightEncoderCount = rightEncoder.getEncoderCount();
+    long currentLeftEncoderCount1 = leftEncoder1.getEncoderCount();
+    long currentLeftEncoderCount2 = leftEncoder2.getEncoderCount();
+    long currentRightEncoderCount1 = rightEncoder1.getEncoderCount();
+    long currentRightEncoderCount2 = rightEncoder2.getEncoderCount();
 
-    Serial.print((currentLeftEncoderCount) / 600.0);
+    Serial.print((currentLeftEncoderCount1) / 600.0);
     Serial.print(" , ");
-    Serial.println((currentRightEncoderCount) / 600.0);
+    Serial.print((currentLeftEncoderCount2) / 600.0);
+    Serial.print(" , ");
+    Serial.print((currentRightEncoderCount1) / 600.0);
+    Serial.print(" , ");
+    Serial.println((currentRightEncoderCount2) / 600.0);
 
     lastMilli = millis();
   }
