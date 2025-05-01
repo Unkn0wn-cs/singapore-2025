@@ -22,11 +22,13 @@ int step = 1;
 
 class Move {
   public:
-    void forward() {
+    void forward(int in = 1) {
+      // while (in <= leftEncoder1){
       motor1.run(FORWARD);
       motor2.run(FORWARD);
       motor3.run(FORWARD);
       motor4.run(FORWARD);
+      // }
     }
 
     void backward() {
@@ -127,6 +129,8 @@ void loop() {
     lastTime = currentTime;
     if (step < 12) {
       step++;
+    } else {
+      step = 1;
     }
   }
 
