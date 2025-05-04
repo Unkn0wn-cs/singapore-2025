@@ -151,6 +151,8 @@ void loop() {
     lastTime = currentTime;
     if (step < 12) {
       step++;
+    }else {
+      step = 1;
     }
   }
 
