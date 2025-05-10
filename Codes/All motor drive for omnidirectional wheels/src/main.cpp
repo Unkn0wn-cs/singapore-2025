@@ -7,10 +7,10 @@ AF_DCMotor motor1(1); // Motor 1 on the Adafruit Motor Shield
 AF_DCMotor motor2(2); // Motor 2 on the Adafruit Motor Shield
 AF_DCMotor motor3(3); // Motor 3 on the Adafruit Motor Shield
 AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
-Encoders leftEncoder1(A8, A9); // Encoder for motor1
-Encoders leftEncoder2(A10, A11); // Encoder for motor2
-Encoders rightEncoder1(A12, A13); // Encoder for motor3
-Encoders rightEncoder2(A14, A15); // Encoder for motor4
+// Encoders leftEncoder1(A8, A9); // Encoder for motor1
+// Encoders leftEncoder2(A10, A11); // Encoder for motor2
+// Encoders rightEncoder1(A12, A13); // Encoder for motor3
+// Encoders rightEncoder2(A14, A15); // Encoder for motor4
 
 const int pwmValueA = 225; // Maximum PWM value (full speed)
 const int pwmValueB = 225; // Maximum PWM value (full speed)
@@ -134,21 +134,21 @@ void loop() {
     }
   }
 
-  if (millis() - lastMilli > 50) {
-    long currentLeftEncoderCount1 = leftEncoder1.getEncoderCount();
-    long currentLeftEncoderCount2 = leftEncoder2.getEncoderCount();
-    long currentRightEncoderCount1 = rightEncoder1.getEncoderCount();
-    long currentRightEncoderCount2 = rightEncoder2.getEncoderCount();
+  // if (millis() - lastMilli > 50) {
+  //   long currentLeftEncoderCount1 = leftEncoder1.getEncoderCount();
+  //   long currentLeftEncoderCount2 = leftEncoder2.getEncoderCount();
+  //   long currentRightEncoderCount1 = rightEncoder1.getEncoderCount();
+  //   long currentRightEncoderCount2 = rightEncoder2.getEncoderCount();
 
-    Serial.print((currentLeftEncoderCount1) / 600.0);
-    Serial.print(" , ");
-    Serial.print((currentLeftEncoderCount2) / 600.0);
-    Serial.print(" , ");
-    Serial.print((currentRightEncoderCount1) / 600.0);
-    Serial.print(" , ");
-    Serial.println((currentRightEncoderCount2) / 600.0);
+  //   Serial.print((currentLeftEncoderCount1) / 600.0);
+  //   Serial.print(" , ");
+  //   Serial.print((currentLeftEncoderCount2) / 600.0);
+  //   Serial.print(" , ");
+  //   Serial.print((currentRightEncoderCount1) / 600.0);
+  //   Serial.print(" , ");
+  //   Serial.println((currentRightEncoderCount2) / 600.0);
 
-    lastMilli = millis();
-  }
+  //   lastMilli = millis();
+  // }
 }
 
