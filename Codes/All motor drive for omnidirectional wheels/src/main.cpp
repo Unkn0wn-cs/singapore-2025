@@ -140,7 +140,7 @@ void loop() {
   //   long currentRightEncoderCount1 = rightEncoder1.getEncoderCount();
   //   long currentRightEncoderCount2 = rightEncoder2.getEncoderCount();
 
-  //   Serial.print((currentLeftEncoderCount1) / 600.0);
+  //   Serial.print((currentLeftEncoderCount1) / 600.0);   
   //   Serial.print(" , ");
   //   Serial.print((currentLeftEncoderCount2) / 600.0);
   //   Serial.print(" , ");

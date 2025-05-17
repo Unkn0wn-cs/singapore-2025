@@ -5,9 +5,26 @@
 
 #define LINE_FOLLOWER_I2C_ADDR    0x78  // iic地址
 
+
+
 u8 data;
 bool WireWriteByte(uint8_t val)
 {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     Wire.beginTransmission(LINE_FOLLOWER_I2C_ADDR);
     Wire.write(val);
     if( Wire.endTransmission() != 0 ) {
@@ -28,6 +45,7 @@ bool WireReadDataByte(uint8_t reg, uint8_t &val)
         val = Wire.read();
     }   
     return true;
+
 }
 int WireReadDataArray(uint8_t reg, uint8_t *val, unsigned int len)
 {
@@ -36,7 +54,7 @@ int WireReadDataArray(uint8_t reg, uint8_t *val, unsigned int len)
     /* Indicate which register we want to read from */
     if (!WireWriteByte(reg)) {
         return -1;
-    }
+            }
     
     /* Read block data */
     Wire.requestFrom(LINE_FOLLOWER_I2C_ADDR, len);
