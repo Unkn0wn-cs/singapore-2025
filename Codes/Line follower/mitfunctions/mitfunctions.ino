@@ -21,7 +21,7 @@ float error = 0, previousError = 0, integral = 0, derivative = 0;
 float correction = 0;
 
 // Motor speed
-int baseSpeed = 75; // Base speed for motors
+int baseSpeed = 100; // Base speed for motors
 int leftMotorSpeed = 0, rightMotorSpeed = 0;
 
 // Function to write a byte to the I2C device
@@ -84,6 +84,51 @@ void setMotorSpeed(int leftSpeed, int rightSpeed) {
     motor2.run(FORWARD);
 }
 
+bool white(){ //tests if there's no line 
+    if ((sensorValues[0] + sensorValues[1] + sensorValues[2] + sensorValues[3]) == 0) 
+    // no line detected
+    {   
+        return true;
+    }
+}
+
+void is_white(){ 
+        white_counter++;
+        if (white_counter > 100){
+            motor1.setSpeed(baseSpeed);
+            motor2.setSpeed(baseSpeed);
+            motor1.run(BACKWARD);
+            motor2.run(BACKWARD);
+            back = true;
+            white_counter=0;
+        }
+}
+void turn_left() {
+            back = false;
+            while motor1.run(BACKWARD);
+            motor2.run(FORWARD);
+            motor2.setSpeed(baseSpeed * 2);
+            motor1.setSpeed(baseSpeed *2);
+            delay(100);
+            motor1.run(FORWARD);
+            motor2.run(FORWARD);
+}
+
+void turn_right() {
+            back = false;
+            motor1.run(FORWARD);
+            motor2.run(FORWARD);
+            delay(100);
+            motor1.run(FORWARD);
+            motor2.run(BACKWARD);
+            motor2.setSpeed(baseSpeed * 2);
+            motor1.setSpeed(baseSpeed *2);
+            delay(100);
+            motor1.run(FORWARD);
+            motor2.run(FORWARD);
+            back = false;
+}
+
 void setup() {
     // Initialize I2C communication
     Wire.begin();
@@ -110,51 +155,29 @@ void loop() {
     // Calculate error based on sensor readings
     error = calculateError(sensorValues);
     
-    if ((sensorValues[0] + sensorValues[1] + sensorValues[2] + sensorValues[3]) == 0) 
+    if (white()) 
     // no line detected
     {   
-        white_counter++;
-        if (white_counter > 100){
-            motor1.setSpeed(baseSpeed);
-            motor2.setSpeed(baseSpeed);
-            motor1.run(BACKWARD);
-            motor2.run(BACKWARD);
-            back = true;
-            white_counter=0;
-        }
-
-    }else if ((sensorValues[0] || sensorValues[1] || sensorValues[2] || sensorValues[3]) && back == true){ //line detected but going back
+        is_white();
+    }
+    
+    else if ((sensorValues[0] || sensorValues[1] || sensorValues[2] || sensorValues[3]) && back == true){ //line detected but going back
         //motor run foward and turn 90 if a corner is near
         if (sensorValues[0] && sensorValues[1] && !(sensorValues[3]))
-        {   back = false;
-            motor1.run(FORWARD);
-            motor2.run(FORWARD);
-            delay(100);
-            motor1.run(BACKWARD);
-            motor2.run(FORWARD);
-            motor2.setSpeed(baseSpeed * 2);
-            motor1.setSpeed(baseSpeed *2);
-            delay(100);
-            motor1.run(FORWARD);
-            motor2.run(FORWARD);
+        {   
+            turn_left();
         }
         else if (sensorValues[2] && sensorValues[3] && !(sensorValues[1]))
-        {   back = false;
-            motor1.run(FORWARD);
-            motor2.run(FORWARD);
-            delay(100);
-            motor1.run(FORWARD);
-            motor2.run(BACKWARD);
-            motor2.setSpeed(baseSpeed * 2);
-            motor1.setSpeed(baseSpeed *2);
-            delay(100);
-            motor1.run(FORWARD);
-            motor2.run(FORWARD);
-            back = false;
+        {   
+            turn_right()
         }
+        back = false;
         motor1.run(FORWARD);
         motor2.run(FORWARD);
     } else {
+        back = false;
+        motor1.run(FORWARD);
+        motor2.run(FORWARD);
     // Calculate PID terms
     integral += error;
     derivative = error - previousError;
