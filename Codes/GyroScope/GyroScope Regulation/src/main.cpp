@@ -1,7 +1,7 @@
 // Librerias I2C para controlar el mpu6050
 // la libreria MPU6050.h necesita I2Cdev.h, I2Cdev.h necesita Wire.h
-#include "I2Cdev.h"
-#include "MPU6050.h"
+#include "C:\Users\samue\OneDrive\Documents\GitHub\singapore25\Codes\lib for VS\I2Cdev\I2Cdev.h"
+#include "C:\Users\samue\OneDrive\Documents\GitHub\singapore25\Codes\lib for VS\MPU6050\MPU6050.h"
 #include "Wire.h"
 
 // La dirección del MPU6050 puede ser 0x68 o 0x69, dependiendo 
@@ -31,7 +31,7 @@ void loop() {
   sensor.getAcceleration(&ax, &ay, &az);
   sensor.getRotation(&gx, &gy, &gz);
 
-  dt = (millis() - tiempo_prev) / 1000.0;
+  dt = (millis() - tiempo_prev) / 1000.0;  
   tiempo_prev = millis();
 
   ang_z = ang_z_prev + (gz / 131.0) * dt; // Z-axis rotation using gyroscope only

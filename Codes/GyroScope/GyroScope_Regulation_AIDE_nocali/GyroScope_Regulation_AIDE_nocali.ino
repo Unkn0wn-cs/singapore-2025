@@ -23,6 +23,7 @@ int calibrated;
 int ax_o,ay_o,az_o;
 int gx_o,gy_o,gz_o;
 
+int alpha = 0;
 long tiempo_prev;
 float dt;
 float ang_x, ang_y, ang_z; // Added ang_z for Z-axis rotation
@@ -140,11 +141,11 @@ void loop() {
   Serial.print("\tRotacion en Z: ");
   Serial.println(ang_z);
 
-  if (ang_z >= 10) {
+  if (ang_z >= alpha + 10) {
     move.rotate(true, 180); 
-  } else if (ang_z <= -10){
+  } else if (ang_z <= alpha - 10){
     move.rotate(false, 180);
-  } else if (ang_z > -10 || ang_z < 10){
+  } else if (ang_z > alpha -10 || ang_z < alpha + 10){
     move.stop();
   }
 }

@@ -1,8 +1,8 @@
 // Librerias I2C para controlar el mpu6050
 // la libreria MPU6050.h necesita I2Cdev.h, I2Cdev.h necesita Wire.h
+#include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050.h"
-#include "Wire.h"
 
 // La dirección del MPU6050 puede ser 0x68 o 0x69, dependiendo 
 // del estado de AD0. Si no se especifica, 0x68 estará implicito
