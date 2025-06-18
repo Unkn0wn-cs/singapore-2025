@@ -79,6 +79,8 @@ void loop() {
   //Cada 100 lecturas corregir el offset
   if (counter==100){
     //Mostrar las lecturas separadas por un [tab]
+NEW SKETCH
+
     Serial.print("promedio:"); Serial.print("t");
     Serial.print(p_ax); Serial.print("\t");
     Serial.print(p_ay); Serial.print("\t");

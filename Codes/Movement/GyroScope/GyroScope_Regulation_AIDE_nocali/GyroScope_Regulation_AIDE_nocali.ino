@@ -23,7 +23,7 @@ int calibrated;
 int ax_o,ay_o,az_o;
 int gx_o,gy_o,gz_o;
 
-int alpha = 90;
+int alpha = 0;
 long tiempo_prev;
 float dt;
 float ang_x, ang_y, ang_z; // Added ang_z for Z-axis rotation
@@ -50,13 +50,11 @@ int step = 1;
 
 class Move {
   public:
-    void forward(int in = 1) {
-      // while (in <= leftEncoder1){
+    void forward() {
       motor1.run(FORWARD);
       motor2.run(FORWARD);
       motor3.run(FORWARD);
       motor4.run(FORWARD);
-      // }
     }
 
     void backward() {
@@ -146,7 +144,12 @@ void loop() {
   } else if (ang_z <= alpha - 10){
     move.rotate(false, 180);
   } else if (ang_z > alpha -10 || ang_z < alpha + 10){
-    move.stop();
+      motor1.setSpeed(255);
+  motor2.setSpeed(255);
+  motor3.setSpeed(255);
+  motor4.setSpeed(255);
+  move.forward();
   }
+
 }
 

@@ -24,6 +24,35 @@ class Move {
       moving = true; 
     }
 
+    //Movement without encoder regulation
+    void simpleForward() {
+      motor1.run(FORWARD);
+      motor2.run(FORWARD);
+      motor3.run(FORWARD);
+      motor4.run(FORWARD);
+    }
+
+    void simpleBackward() {
+      motor1.run(BACKWARD);
+      motor2.run(BACKWARD);
+      motor3.run(BACKWARD);
+      motor4.run(BACKWARD);
+    }
+
+    void simpleLeft() {
+      motor1.run(BACKWARD);
+      motor2.run(FORWARD);
+      motor3.run(BACKWARD);
+      motor4.run(FORWARD);
+    }
+
+    void simpleRight() {
+      motor1.run(FORWARD);
+      motor2.run(BACKWARD);
+      motor3.run(FORWARD);
+      motor4.run(BACKWARD);
+    }
+
     // Forward
     bool forward(long pulses) {
       if (!moving) startMove();
@@ -81,12 +110,20 @@ class Move {
     }
 
     // Rotation (not encoder regulated)
-    void rotateCW() {
+    void rotateCW(int pwm, int pwm2, int pwm3, int pwm4) {
       setMotors(BACKWARD, FORWARD, FORWARD, BACKWARD);
+      motor1.setSpeed(pwm);
+      motor2.setSpeed(pwm2);
+      motor3.setSpeed(pwm3);
+      motor4.setSpeed(pwm4);      
       moving = false;
     }
-    void rotateCCW() {
+    void rotateCCW(int pwm, int pwm2, int pwm3, int pwm4) {
       setMotors(FORWARD, BACKWARD, BACKWARD, FORWARD);
+      motor1.setSpeed(pwm);
+      motor2.setSpeed(pwm2);
+      motor3.setSpeed(pwm3);
+      motor4.setSpeed(pwm4);      
       moving = false;
     }
 

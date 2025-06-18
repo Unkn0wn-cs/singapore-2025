@@ -39,7 +39,7 @@ THE SOFTWARE.
 #define _MPU6050_H_
 
 #include "../I2Cdev/I2Cdev.h"
-#include "../I2Cdev/I2Cdev.cpp"
+// #include "../I2Cdev/I2Cdev.cpp"
 #include "helper_3dmath.h"
 
 // supporting link:  http://forum.arduino.cc/index.php?&topic=143444.msg1079517#msg1079517
@@ -50,11 +50,11 @@ THE SOFTWARE.
 #elif defined(ESP32)
     #include <pgmspace.h>
 #else
-//#define PROGMEM /* empty */
-//#define pgm_read_byte(x) (*(x))
-//#define pgm_read_word(x) (*(x))
-//#define pgm_read_float(x) (*(x))
-//#define PSTR(STR) STR
+#define PROGMEM /* empty */
+#define pgm_read_byte(x) (*(x))
+#define pgm_read_word(x) (*(x))
+#define pgm_read_float(x) (*(x))
+#define PSTR(STR) STR
 #endif
 
 
