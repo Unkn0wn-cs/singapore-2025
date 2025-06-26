@@ -183,6 +183,164 @@ class Move {
       return static_cast<long>(mm * pulsesPerMM + 0.5f); // rounded
     }
 
+    // Calculates the distance in mm for a given number of pulses
+    float pulsesToMM(long pulses, float wheelDiameterMM, int pulsesPerRevolution) {
+        // Calculate wheel circumference in mm
+        float circumference = 3.14159265f * wheelDiameterMM;
+        // mm per pulse
+        float mmPerPulse = circumference / pulsesPerRevolution; 
+        // Total mm for the given pulses
+        return pulses * mmPerPulse;
+    }
+
+    // Accelerate all motors from initialPWM to targetPWM in 'steps' increments
+    // Call this repeatedly in your main loop
+    
+    // ...existing code...
+
+bool accelerateToPWM(int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, bool reverse = false) {
+  static int currentStep = 0;
+  static unsigned long lastStepTime = 0;
+  static int pwm = initialPWM;
+  if (currentStep == 0) {
+    pwm = initialPWM;
+    lastStepTime = millis();
+    setAllSpeeds(pwm);
+  }
+  if ((!reverse && pwm >= targetPWM) || (reverse && pwm <= targetPWM)) {
+    setAllSpeeds(targetPWM);
+    currentStep = 0;
+    return true;
+  }
+  if (millis() - lastStepTime >= stepDelay) {
+    if (!reverse)
+      pwm = initialPWM + ((targetPWM - initialPWM) * currentStep) / steps;
+    else
+      pwm = initialPWM - ((initialPWM - targetPWM) * currentStep) / steps;
+    setAllSpeeds(pwm);
+    currentStep++;
+    lastStepTime = millis();
+  }
+  if (currentStep > steps) {
+    setAllSpeeds(targetPWM);
+    currentStep = 0;
+    return true;
+  }
+  return false;
+}
+
+// Accelerate and then decelerate forward
+bool accelerateForward(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+  static bool decelerating = false;
+  long currentPulses = encoderRight.getEncoderCount();
+  long decelStart = pulses * decelPercent;
+
+  if (!moving) {
+    startMove();
+    setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
+    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+    delay(20);
+    decelerating = false;
+  }
+  setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
+
+  if (!decelerating && currentPulses >= decelStart) {
+    decelerating = true;
+  }
+
+  if (!decelerating) {
+    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+  } else {
+    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+  }
+
+  return checkDone(pulses);
+}
+
+// Accelerate and then decelerate backward with variations
+bool accelerateBackward(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+  static bool decelerating = false;
+  long currentPulses = encoderRight.getEncoderCount();
+  long decelStart = pulses * decelPercent;
+
+  if (!moving) {
+    startMove();
+    setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
+    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+    delay(20);
+    decelerating = false;
+  }
+  setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
+
+  if (!decelerating && currentPulses >= decelStart) {
+    decelerating = true;
+  }
+
+  if (!decelerating) {
+    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+  } else {
+    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+  }
+
+  return checkDone(pulses);
+}
+
+// Accelerate and then decelerate left with variations
+bool accelerateLeft(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+  static bool decelerating = false;
+  long currentPulses = encoderLeft.getEncoderCount();
+  long decelStart = pulses * decelPercent;
+
+  if (!moving) {
+    startMove();
+    setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
+    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+    delay(20);
+    decelerating = false;
+  }
+  setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
+
+  if (!decelerating && currentPulses >= decelStart) {
+    decelerating = true;
+  }
+
+  if (!decelerating) {
+    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+  } else {
+    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+  }
+
+  return checkDone(pulses);
+}
+
+// Accelerate and then decelerate right with variations
+bool accelerateRight(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+  static bool decelerating = false;
+  long currentPulses = encoderRight.getEncoderCount();
+  long decelStart = pulses * decelPercent;
+
+  if (!moving) {
+    startMove();
+    setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
+    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+    delay(20);
+    decelerating = false;
+  }
+  setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
+
+  if (!decelerating && currentPulses >= decelStart) {
+    decelerating = true;
+  }
+
+  if (!decelerating) {
+    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+  } else {
+    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+  }
+
+  return checkDone(pulses);
+}
+
   private:
     AF_DCMotor& motor1;
     AF_DCMotor& motor2;
@@ -210,5 +368,20 @@ class Move {
         return true;
       }
       return false;
+    }
+
+    // Helper to set all motor speeds
+    void setAllSpeeds(int pwm) {
+      motor1.setSpeed(pwm);
+      motor2.setSpeed(pwm);
+      motor3.setSpeed(pwm);
+      motor4.setSpeed(pwm);
+    }
+
+    void setIndividualSpeeds(int pwm1, int pwm2, int pwm3, int pwm4) {
+      motor1.setSpeed(pwm1); 
+      motor2.setSpeed(pwm2);
+      motor3.setSpeed(pwm3);
+      motor4.setSpeed(pwm4);
     }
 };

@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-const byte switchPin = 19; //for interrupt on Mega
+const byte switchPin = 18; //for interrupt on Mega
 
 volatile bool switchPressed = false;
 volatile unsigned long lastPressTime = 0;
@@ -30,5 +30,5 @@ void loop() {
     Serial.println(pressTime);
   }
 
-  delay(10000); // Debounce delay
+  // delay(10000); // Debounce delay
 }

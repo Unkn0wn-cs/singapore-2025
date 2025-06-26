@@ -84,9 +84,9 @@ void loop()
   pixy.ccc.getBlocks();
   // If there are detect blocks, print them!
   if (ang_z >= alpha + 10) {
-    move.rotateCW(180, 180, 180, 180); 
+    move.rotateCCW(180, 180, 180, 180); 
   } else if (ang_z <= alpha - 10){
-    move.rotateCCW(180, 180, 180, 180);
+    move.rotateCW(180, 180, 180, 180);
   } else if (ang_z > alpha -10 || ang_z < alpha + 10){
     move.begin(250,250,250,250); //dfine the power
     if (pixy.ccc.numBlocks){

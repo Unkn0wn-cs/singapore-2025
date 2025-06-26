@@ -130,7 +130,7 @@ void loop() {
   dt = (millis() - tiempo_prev) / 1000.0;
   tiempo_prev = millis();
 
-  ang_z = ang_z_prev + (gz / 131.0) * dt; // Z-axis rotation using gyroscope only
+  ang_y = ang_y_prev + (gy / 131.0) * dt; // Z-axis rotation using gyroscope only
 
   ang_x_prev = ang_x;
   ang_y_prev = ang_y;
@@ -139,11 +139,11 @@ void loop() {
   Serial.print("\tRotacion en Z: ");
   Serial.println(ang_z);
 
-  if (ang_z >= alpha + 10) {
+  if (ang_y >= alpha + 10) {
     move.rotate(true, 180); 
-  } else if (ang_z <= alpha - 10){
+  } else if (ang_y <= alpha - 10){
     move.rotate(false, 180);
-  } else if (ang_z > alpha -10 || ang_z < alpha + 10){
+  } else if (ang_y > alpha -10 || ang_y < alpha + 10){
       motor1.setSpeed(255);
   motor2.setSpeed(255);
   motor3.setSpeed(255);
