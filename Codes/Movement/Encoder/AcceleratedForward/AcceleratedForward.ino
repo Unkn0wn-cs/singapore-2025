@@ -25,8 +25,8 @@ Encoders rightEncoder(A14 , A12); // Encoder object name rightEncoder using anal
 Move move(motor1, motor2, motor3, motor4, leftEncoder, rightEncoder);
 
 int pwm1 = 220;
-int pwm2 = 220;
-int pwm3 = 220;
+int pwm2 = 230;
+int pwm3 = 230;
 int pwm4 = 220;
 
 void setup() {
@@ -48,15 +48,41 @@ void loop() {
   move.begin(pwm1,pwm2,pwm3,pwm4);
 
   // put your main code here, to run repeatedly:
+// switch(cases){
+//   case 0:
+//     if (move.accelerateForward(move.mmToPulses(1000, 60, ppr), 210, 225, 20, 40, 0, 1)) cases++;
+//     break;
+//   case 1:
+//     if(move.stopForMillis(500))cases++;
+//     break;
+//   case 2:
+//     if (move.accelerateBackward(move.mmToPulses(1010, 60, ppr), 210, 225, 20, 40, 0, 1)) cases++;
+//     break;
+//   case 3:
+//     if(move.stopForMillis(500)) cases = 10;
+//     break;
+//   case 4:
+//     if(move.accelerateRight(move.mmToPulses(500, 60, ppr), 210, 230, 80)) cases++;
+//     break;
+//   case 5:
+//     if(move.stopForMillis(500)) cases++;
+//     break;
+//   case 6:
+//     if(move.accelerateLeft(move.mmToPulses(500, 60, ppr), 210, 230, 80)) cases++;
+//     break;
+//   case 7:
+//     if (move.stopForMillis(500)) 
+//     break;
+// }
 switch(cases){
   case 0:
-    if (move.accelerateForward(move.mmToPulses(1000, 60, ppr), 210, 225, 20, 40, 0, 1)) cases++;
+    if (move.forward(move.mmToPulses(1000, 60, ppr))) cases++;
     break;
   case 1:
     if(move.stopForMillis(500))cases++;
     break;
   case 2:
-    if (move.accelerateBackward(move.mmToPulses(1010, 60, ppr), 210, 225, 20, 40, 0, 1)) cases++;
+    if (move.backward(move.mmToPulses(1010, 60, ppr))) cases++;
     break;
   case 3:
     if(move.stopForMillis(500)) cases = 10;

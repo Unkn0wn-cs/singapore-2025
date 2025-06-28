@@ -2,6 +2,7 @@
 #include <AFMotor.h>
 #include <QuadratureEncoder.h>
 
+
 class Move {
   public:
     Move(AF_DCMotor& m1, AF_DCMotor& m2, AF_DCMotor& m3, AF_DCMotor& m4,
@@ -16,13 +17,15 @@ class Move {
       motor3.setSpeed(pwm3);
       motor4.setSpeed(pwm4);
     } 
-
     // Call before starting a new movement
     void startMove() {
       startLeft = encoderLeft.getEncoderCount();
       startRight = encoderRight.getEncoderCount();
       moving = true; 
     }
+
+    long getStartLeft() const { return startLeft; }
+    long getStartRight() const { return startRight; }
 
     //Movement without encoder regulation
     void simpleForward() {
@@ -109,7 +112,7 @@ class Move {
       return checkDone(pulses);
     }
 
-    // Rotation (not encoder regulated)
+    // Rotation (not encoder regulated)  
     void rotateCW(int pwm, int pwm2, int pwm3, int pwm4) {
       setMotors(BACKWARD, FORWARD, FORWARD, BACKWARD);
       motor1.setSpeed(pwm);
@@ -341,6 +344,17 @@ bool accelerateRight(long pulses, int initialPWM, int targetPWM, int steps = 20,
   return checkDone(pulses);
 }
 
+
+  bool checkDone(long pulses) {
+    long deltaLeft = abs(encoderLeft.getEncoderCount() - startLeft);
+    long deltaRight = abs(encoderRight.getEncoderCount() - startRight);
+    if (deltaLeft >= pulses || deltaRight >= pulses) {
+      stop();
+      return true;
+    }
+    return false;
+  }
+
   private:
     AF_DCMotor& motor1;
     AF_DCMotor& motor2;
@@ -360,15 +374,6 @@ bool accelerateRight(long pulses, int initialPWM, int targetPWM, int steps = 20,
       motor4.run(m4);
     }
 
-    bool checkDone(long pulses) {
-      long deltaLeft = abs(encoderLeft.getEncoderCount() - startLeft);
-      long deltaRight = abs(encoderRight.getEncoderCount() - startRight);
-      if (deltaLeft >= pulses || deltaRight >= pulses) {
-        stop();
-        return true;
-      }
-      return false;
-    }
 
     // Helper to set all motor speeds
     void setAllSpeeds(int pwm) {
