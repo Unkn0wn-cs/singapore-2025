@@ -18,10 +18,10 @@ Encoders encoderRight(A14 , A12); // Encoder object name rightEncoder using anal
 
 Move move(motor1, motor2, motor3, motor4, encoderLeft, encoderRight);
 
-int pwm1 = 220;
-int pwm2 = 230;
-int pwm3 = 230;
-int pwm4 = 220;
+int pwm1 = 200;
+int pwm2 = 200;
+int pwm3 = 200;
+int pwm4 = 200;
 
 //define objects
 MPU6050 sensor;
@@ -128,8 +128,8 @@ void setup() {
   digitalWrite(input4, HIGH);
 
   // servo
-  myservo.attach(10); 
-  myservo.write(90);
+  myservo.attach(9); 
+  myservo.write(180);
 
   //mpu 
     Wire.begin();           // Iniciando I2C
@@ -185,7 +185,6 @@ void setup() {
 void loop() {
   move.begin(pwm1,pwm2,pwm3,pwm4);
 
-
   //VAriables para los casos -----------------------------------------------------------
   bool stopped = false;
   long startLeft = move.getStartLeft();
@@ -193,16 +192,16 @@ void loop() {
   static int currentPulses;
   static bool repeat = false;
   static int state = 0;
-  static int beta = 12; //degree error
+  static int beta = 8; //degree error
   static int theta = 10;
   static int alpha = 0;
   static int mili = 500; //delay
   int diameter = 60; //Diameter of the wheel in mm
-  const long ppr = 1200; // Number of pulses for each movement ste
-  int closed = 95;
+  const long ppr = 800; // Number of pulses for each movement ste
+  int closed = 180;
   int open = 0;
   int resetRoutine = 7;
-  int largo = 700;
+  int largo = 400;
 
   //activate rotor
   digitalWrite(enable34, HIGH);
@@ -242,17 +241,13 @@ void loop() {
   Serial.print("\tRotacion en Z: ");
   Serial.println(ang_z);
 
+  if ((checkDone(currentPulses, startLeft, startRight)) && (stopped = false)) state++;
+
   //check if the robot is centered before acting---------------------------------
   if (ang_z >= alpha + beta) {
     move.rotateCW(200, 200, 200, 200);
-
-    if ((checkDone(currentPulses, startLeft, startRight)) && (stopped = false)) state++;
-
   } else if (ang_z <= alpha - beta){
     move.rotateCCW(200, 200, 200, 200);
-
-    if ((checkDone(currentPulses, startLeft, startRight)) && (stopped = false)) state++;
-
   } else if (ang_z > alpha - beta || ang_z < alpha + beta){
 
     //routine 0-3 = case 0-3 ball 
@@ -369,10 +364,17 @@ switch (routine) {// Routines --------------
     case 4: // Routine 4 // Left Sweeps -------------------------------------------------------------------
       switch (state) {
       case 0:
-        if (move.accelerateBackward(move.mmToPulses(50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+        if (move.accelerateBackward(currentPulses = move.mmToPulses(50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+        stopped = false;
         break; 
       case 1:
-        if (move.accelerateForward(move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+        if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+        // else if (ang_z >= alpha + beta) {
+        //   move.rotateCW(200, 200, 200, 200);
+        // } else if (ang_z <= alpha - beta){
+        //   move.rotateCCW(200, 200, 200, 200);
+        // }
+        stopped = false;
         break;
       case 2:
         if (move.stopForMillis(mili)) state++;
@@ -380,6 +382,7 @@ switch (routine) {// Routines --------------
         break;
       case 3:
         if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+        stopped = false;
         break;
       case 4:
         if (move.stopForMillis(mili)) state++;

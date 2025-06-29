@@ -24,8 +24,8 @@ class Move {
       moving = true; 
     }
 
-    long getStartLeft() const { return startLeft; }
-    long getStartRight() const { return startRight; }
+    long getStartLeft()  { return startLeft; }
+    long getStartRight()  { return startRight; }
 
     //Movement without encoder regulation
     void simpleForward() {
