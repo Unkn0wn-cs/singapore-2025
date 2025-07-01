@@ -18,10 +18,10 @@ Encoders encoderRight(A14 , A12); // Encoder object name rightEncoder using anal
 
 Move move(motor1, motor2, motor3, motor4, encoderLeft, encoderRight);
 
-int pwm1 = 200;
+int pwm1 = 160;
 int pwm2 = 200;
 int pwm3 = 200;
-int pwm4 = 200;
+int pwm4 = 160;
 
 //define objects
 MPU6050 sensor;
@@ -146,33 +146,33 @@ void setup() {
   pinMode(switchPin, INPUT_PULLUP);
   pinMode(switchPin1, INPUT_PULLUP);
 
-  pixy.init();
-  pixy.setLamp(255, 0);
-    //Calculate purple position
-  int center_y = 55;
-  int center_x = 200;
+  // pixy.init();
+  // pixy.setLamp(255, 0);
+  //   //Calculate purple position
+  // int center_y = 55;
+  // int center_x = 200;
 
-  for (int i = 0; i < 10; i++){
-    delay(5);
-  pixy.ccc.getBlocks();
-  if (pixy.ccc.numBlocks > 0) {
-    int ix = pixy.ccc.blocks[0].m_x; 
-    int iy = pixy.ccc.blocks[0].m_y;
-    //definir routine 
-    if (ix < center_x && iy < center_y){
-      routine = 1;
-      Serial.print("upper left corner, case 1");
-    } else if (ix > center_x && iy < center_y){
-      routine = 3;
-      Serial.print("upper right corner, case 3");
-    } else if (ix < center_x && iy > center_y){
-      routine = 0;
-      Serial.print("lower left corner, case 0");
-    } else if (ix > center_x && iy > center_y){
-      routine = 2;
-      Serial.print("lower Right corner, case 2");
-    }
-  }} 
+  // for (int i = 0; i < 10; i++){
+  //   delay(5);
+  // pixy.ccc.getBlocks();
+  // if (pixy.ccc.numBlocks > 0) {
+  //   int ix = pixy.ccc.blocks[0].m_x; 
+  //   int iy = pixy.ccc.blocks[0].m_y;
+  //   //definir routine 
+  //   if (ix < center_x && iy < center_y){
+  //     routine = 1;
+  //     Serial.print("upper left corner, case 1");
+  //   } else if (ix > center_x && iy < center_y){
+  //     routine = 3;
+  //     Serial.print("upper right corner, case 3");
+  //   } else if (ix < center_x && iy > center_y){
+  //     routine = 0;
+  //     Serial.print("lower left corner, case 0");
+  //   } else if (ix > center_x && iy > center_y){
+  //     routine = 2;
+  //     Serial.print("lower Right corner, case 2");
+  //   }
+  // }} 
   // else{routine = 4;}
           // Serial.print("No balls 🤨");
 
@@ -190,28 +190,26 @@ void loop() {
   long startLeft = move.getStartLeft();
   long startRight = move.getStartRight();
   static int currentPulses;
-  static bool repeat = false;
   static int state = 0;
   static int beta = 8; //degree error
-  static int theta = 10;
   static int alpha = 0;
   static int mili = 500; //delay
   int diameter = 60; //Diameter of the wheel in mm
   const long ppr = 800; // Number of pulses for each movement ste
   int closed = 180;
   int open = 0;
-  int resetRoutine = 7;
-  int largo = 400;
+  int resetRoutine = 6;
+  int largo = 1000;
 
   //activate rotor
   digitalWrite(enable34, HIGH);
   digitalWrite(input3, LOW);
   digitalWrite(input4, HIGH);
 
-  //Read camera
-  pixy.ccc.getBlocks();
-  if (pixy.ccc.numBlocks > 0) {int x = pixy.ccc.blocks[0].m_x;}
-  if (pixy.ccc.numBlocks > 0) {int y = pixy.ccc.blocks[0].m_y;}
+  // //Read camera
+  // pixy.ccc.getBlocks();
+  // if (pixy.ccc.numBlocks > 0) {int x = pixy.ccc.blocks[0].m_x;}
+  // if (pixy.ccc.numBlocks > 0) {int y = pixy.ccc.blocks[0].m_y;}
 
   // Handle switch press
   bool currentSwitchState = digitalRead(switchPin);
@@ -241,14 +239,13 @@ void loop() {
   Serial.print("\tRotacion en Z: ");
   Serial.println(ang_z);
 
-  if ((checkDone(currentPulses, startLeft, startRight)) && (stopped = false)) state++;
 
   //check if the robot is centered before acting---------------------------------
-  if (ang_z >= alpha + beta) {
-    move.rotateCW(200, 200, 200, 200);
-  } else if (ang_z <= alpha - beta){
-    move.rotateCCW(200, 200, 200, 200);
-  } else if (ang_z > alpha - beta || ang_z < alpha + beta){
+  // if (ang_z >= alpha + beta) {
+  //   move.rotateCW(200, 200, 200, 200);
+  // } else if (ang_z <= alpha - beta){
+  //   move.rotateCCW(200, 200, 200, 200);
+  // } else if (ang_z > alpha - beta || ang_z < alpha + beta){
 
     //routine 0-3 = case 0-3 ball 
     //routine 4 left sweep
@@ -397,7 +394,7 @@ switch (routine) {// Routines --------------
     case 5: // Right Sweeps----------------------------------------------------
       switch (state) {
       case -1:
-        if (move.accelerateRight(move.mmToPulses(220.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 1;
+        if (move.accelerateRight(move.mmToPulses(180.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 1;
         break;
       case 0:
         if (move.accelerateRight(move.mmToPulses(360.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
@@ -444,25 +441,90 @@ switch (routine) {// Routines --------------
       case 6: // left reset -------------------------------------------------------------
         switch(state){
           case 0:
-            if (move.accelerateBackward(move.mmToPulses(250.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
-            break;
+              if (move.accelerateBackward(move.mmToPulses(250.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+              break;
           case 1:
-            if (move.stopForMillis(mili)) state++;
-            stopped = true;
-            break;
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
           case 2:
-            if (move.accelerateLeft(move.mmToPulses(400.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
-            break;
-          case 3:
-            if (move.stopForMillis(mili)) state++;
-            stopped = true;
-            break;
+              if (move.forward(move.mmToPulses(20, diameter, ppr))) state++;
+              break;
+          case 3: // Pause after forward
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
           case 4:
-            if (move.accelerateRight(move.mmToPulses(70, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
-          case 5:
-            routine = 5; // Move to next routine
-            state = 0; // Reset state for the next routine
-            break;
+              alpha = 70;
+              if (ang_z >= alpha + beta) {
+                  move.rotateCW(pwm1, pwm2, pwm3, pwm4);
+              } else if (ang_z <= alpha - beta){
+                  move.rotateCCW(pwm1, pwm2, pwm3, pwm4);
+              } else if (ang_z > alpha - beta || ang_z < alpha + beta) state++;
+              break;
+          case 5: // Pause after rotate
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 6:
+              if (move.left(move.mmToPulses(200, diameter, ppr))) state++;
+              break;
+          case 7: // Pause after left
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 8:
+              if (move.forward(move.mmToPulses(400, diameter, ppr))) state++;
+              break;
+          case 9: // Pause after forward
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 10:
+              if (move.right(move.mmToPulses(70, diameter, ppr))) state++;
+              break;
+          case 11: // Pause after backward
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 12:
+              alpha = 0;
+              if (ang_z >= alpha + beta) {
+                  move.rotateCW(pwm1, pwm2, pwm3, pwm4);
+              } else if (ang_z <= alpha - beta){
+                  move.rotateCCW(pwm1, pwm2, pwm3, pwm4);
+              } else if (ang_z > alpha - beta || ang_z < alpha + beta) state++;
+              break;
+          case 13: // Pause after rotate
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 14:
+              //add microswitch activation
+              if (move.accelerateLeft(move.mmToPulses(200.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+              break;
+          case 15: // Pause after accelerateLeft
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 16:
+              if (move.backward(move.mmToPulses(200, diameter, ppr))) state++;
+              break;
+          case 17:
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 18:
+              if (move.accelerateRight(move.mmToPulses(70, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+              break;
+          case 19: // Pause after accelerateRight
+              if (move.stopForMillis(mili)) state++;
+              stopped = true;
+              break;
+          case 20:
+              routine = 4; // Move to next routine
+              state = 0; // Reset state for the next routine
+              break;
         }
         break;
         case 7: // Routine // Right reset -----------------------------------
@@ -505,6 +567,6 @@ switch (routine) {// Routines --------------
           //   //     move.simpleForward();
           //   // }
           //   break;
-  } 
+  // } 
   }
 }
