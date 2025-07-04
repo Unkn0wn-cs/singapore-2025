@@ -71,6 +71,8 @@ unsigned long lastMilli = 0;
 //---------------------------------
 static int routine = 4;
 bool first = true;
+#define LED 25 //connect LED to digital pin13
+
 
 
 // functions--------------------------------------------------
@@ -114,6 +116,11 @@ void resetGyroAngles() {
 void setup() {
 
   Serial.begin(9600);
+  //test LED
+  pinMode(LED, OUTPUT);     
+  digitalWrite(LED, LOW);   // set the LED off
+
+
   //rotor
   pinMode(enable34, OUTPUT);
   pinMode(input3, OUTPUT);
@@ -179,18 +186,7 @@ void setup() {
 }
 
 void loop() {
-// int pwm1 = 160, pwm2 = 200, pwm3 = 200, pwm4 = 160;  static bool straight; 
-  // if (straight = true){
-  //   pwm1 = 160;
-  //   pwm2 = 200;
-  //   pwm3 = 200;
-  //   pwm4 = 160;
-  // } else {
-  //   pwm1 = 200;
-  //   pwm2 = 200;
-  //   pwm3 = 200;
-  //   pwm4 = 200;   
-  // }
+  int pwm = 140, pwml = 100, pwmh = 180;
   move.begin(pwm1,pwm2,pwm3,pwm4);
 
   //VAriables para los casos -----------------------------------------------------------
@@ -201,13 +197,13 @@ void loop() {
   static int state = 0;
   static int beta = 8; //degree error
   static int alpha = 0;
-  static int mili = 1000; //delay
+  static int mili = 1200; //delay
   int diameter = 60; //Diameter of the wheel in mm
   const long ppr = 1200; // Number of pulses for each movement ste
   int closed = 180;
   int open = 0;
   int resetRoutine = 6;
-  int largo = 900;
+  int largo = 750;
 
   //activate rotor
   digitalWrite(enable34, HIGH);
@@ -366,311 +362,340 @@ switch (routine) {// Routines --------------
 
 
 
-    case 4: // Routine 4 // Left Sweeps -------------------------------------------------------------------
-      switch (state) {
+// ...existing code...
+case 4: // Routine 4 // Right Sweeps -------------------------------------------------------------------
+  switch (state) {
+  case 0:
+    if (move.accelerateBackward(currentPulses = move.mmToPulses(50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 1;
+    break; 
+  case 1:
+    if (move.stopForMillis(mili)) state = 2;
+    stopped = true;
+    break;
+  case 2:
+  if (first == true){
+    pwm1 = pwm;
+    pwm2 = pwm;
+    pwm3 = pwm;
+    pwm4 = pwm;}
+  else if (first == false){
+    pwm1 = pwm;
+    pwm2 = pwm;
+    pwm3 = pwm;
+    pwm4 = pwm;
+    }
+    if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 3;
+    break;
+  case 3:
+    if (move.stopForMillis(2*(mili))) state = 4;
+    stopped = true;
+    break;
+  case 4:
+    pwm1 = pwm;
+    pwm2 = pwm;
+    pwm3 = pwm;
+    pwm4 = pwm;
+    if (move.accelerateBackward(move.mmToPulses(largo + 50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 5;
+    straight = true;
+    break;
+  case 5:
+    if (move.stopForMillis(mili)) state = 6;
+    stopped = true;
+    break;
+  case 6:
+    if (move.right(move.mmToPulses(550, diameter, ppr))) state = 7;
+    straight = false;
+    break;
+  case 7:
+    if (move.stopForMillis(mili)) state = 8;
+    break;
+  case 8:
+    if (move.accelerateBackward(move.mmToPulses(100.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=9;
+    break;
+  case 9:
+    if (move.stopForMillis(mili)) state = 10;
+    break;  
+  case 10:
+    if (first == true){
+    //first = false; 
+    routine = 7;}
+  else if (first == false){
+    routine = 5; // Move to next routine
+  }
+    state = 0; // Reset state for the next routine
+    break;
+  }
+  break;
+case 5: // Left Sweeps----------------------------------------------------
+  switch (state) {
+  case 0:
+      pwm1 = pwm;
+      pwm2 = pwm;
+      pwm3 = pwm;
+      pwm4 = pwm;   
+    if (move.left(move.mmToPulses(350.0, diameter, ppr))) state=1;
+    break;
+  case 1:
+    if (move.stopForMillis(mili)) state++;
+    break;
+  case 2:
+    straight = false;
+    if (move.accelerateBackward(move.mmToPulses(300.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=3;
+    break;
+  case 3:
+    if (move.stopForMillis(mili)) state=4;
+    break;
+  case 4:
+    pwm1 = pwm;
+    pwm2 = pwm;
+    pwm3 = pwm;
+    pwm4 = pwm;
+    if (move.accelerateForward(move.mmToPulses(largo / 2, 60, ppr), 210, 230, 20, 40, 0, 1)) state=5;
+    break;
+  case 5:
+    pwm1 = pwmh;
+    pwm2 = pwm;
+    pwm3 = pwm;
+    pwm4 = pwmh;
+    // if (move.stopForMillis(mili)) state++;
+    move.stop();
+    delay(2*(mili)); 
+    state=6;
+    break;
+  case 6:
+    if (move.accelerateForward(move.mmToPulses(largo / 2, 60, ppr), 210, 230, 20, 40, 0, 1)) state=7;
+    break;
+  case 7:
+    if(move.stopForMillis(2*(mili))) state++;
+    break;
+  case 8:
+    straight = true;
+    pwm1 = pwmh;
+    pwm2 = pwm;
+    pwm3 = pwmh;
+    pwm4 = pwm;
+    if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=9;
+    break;
+  case 9:
+    if (move.stopForMillis(mili)) state=10;
+    break;
+  case 10:
+    if (move.stopForMillis(mili)) state=11;
+    break;
+  case 11:
+    // if (repeat == false) {
+        routine = resetRoutine; // Move to next routine
+        state = 0; // Reset state for the next routine
+        // repeat = true;
+    // } else {
+    //     state = -1;
+    //     repeat = false;
+    // }
+  }
+  break;
+  case 6: // right reset -------------------------------------------------------------
+    switch(state){
       case 0:
-        if (move.accelerateBackward(currentPulses = move.mmToPulses(50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 1;
-        break; 
+          if (move.accelerateBackward(move.mmToPulses(250.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=1;
+          break;
       case 1:
-        if (move.stopForMillis(mili)) state = 2;
-        stopped = true;
-        break;
+          if (move.stopForMillis(mili)) state=2;
+          break;
       case 2:
-      if (first == true){
-        pwm1 = 160;
-        pwm2 = 200;
-        pwm3 = 200;
-        pwm4 = 160;}
-      else if (first == false){
-        pwm1 = 160;
-        pwm2 = 220;
-        pwm3 = 200;
-        pwm4 = 220;
-        }
-        if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 3;
-        break;
-      case 3:
-        if (move.stopForMillis(mili)) state = 4;
-        stopped = true;
-        break;
+          if (move.forward(move.mmToPulses(50, diameter, ppr))) state=3;
+          break;
+      case 3: // Pause after forward
+          if (move.stopForMillis(mili)) state=4;
+          break;
       case 4:
-        pwm1 = 160;
-        pwm2 = 200;
-        pwm3 = 200;
-        pwm4 = 160;
-        if (move.accelerateBackward(move.mmToPulses(largo + 50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 5;
-        straight = true;
-        break;
-      case 5:
-        if (move.stopForMillis(mili)) state = 6;
-        stopped = true;
-        break;
+          pwm1 = pwml; pwm2 = pwml; pwm3 = pwml; pwm4 = pwml;
+          alpha = -70;
+          if (ang_z >= alpha + beta) {
+              move.rotateCW(pwm1, pwm2, pwm3, pwm4);
+          } else if (ang_z <= alpha - beta){
+              move.rotateCCW(pwm1, pwm2, pwm3, pwm4);
+          } else if (ang_z > alpha - beta || ang_z < alpha + beta) state=5;
+          break;
+      case 5: // Pause after rotate
+          if (move.stopForMillis(mili)) state=6;
+          break;
       case 6:
-        if (move.left(move.mmToPulses(650, diameter, ppr))) state = 7;
-        straight = false;
+        pwm1 = pwm;
+        pwm2 = pwm;
+        pwm3 = pwm;
+        pwm4 = pwm;
+        if (move.right(move.mmToPulses(150, diameter, ppr))) state=7;
         break;
-      case 7:
-        if (move.stopForMillis(mili)) state = 8;
+      case 7: // Pause after right
+        pwm1 = pwm;
+        pwm2 = pwmh;
+        pwm3 = pwmh;
+        pwm4 = pwm;
+        if (move.stopForMillis(mili)) state=8;
         break;
       case 8:
-        if (move.accelerateBackward(move.mmToPulses(100.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=9;
+        if (move.forward(move.mmToPulses(450, diameter, ppr))) state=9;
         break;
-      case 9:
-      if (first == true){
-        first = false; 
-        routine = 5;}
-      else if (first == false){
-        routine = 8; // Move to next routine
-      }
-        state = 0; // Reset state for the next routine
+      case 9: // Pause after forward
+        pwm1 = pwm;
+        pwm2 = pwm;
+        pwm3 = pwm;
+        pwm4 = pwm;
+        if (move.stopForMillis(mili)) state=10;
+        break;
+      case 10:
+          if (move.left(move.mmToPulses(70, diameter, ppr))) state=11;
+          break;
+      case 11: // Pause after backward
+          if (move.stopForMillis(mili)) state=12;
+          break;
+      case 12:
+          pwm1 = pwml; pwm2 = pwml; pwm3 = pwml; pwm4 = pwml;
+          alpha = -10;
+          if (ang_z >= alpha + beta) {
+              move.rotateCW(pwm1, pwm2, pwm3, pwm4);
+          } else if (ang_z <= alpha - beta){
+              move.rotateCCW(pwm1, pwm2, pwm3, pwm4);
+          } else if (ang_z > alpha - beta || ang_z < alpha + beta) state=13;
+          break;
+      case 13: // Pause after rotate
+          if (move.stopForMillis(mili)) state=14;
+          break;
+      case 14:
+          pwm1 = pwm; pwm2 = pwm; pwm3 = pwm; pwm4 = pwm;
+          //add microswitch activation
+          if (move.accelerateRight(move.mmToPulses(200.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=15;
+          break;
+      case 15: // Pause after accelerateRight
+          if (move.stopForMillis(mili)) state=16;
+          break;
+      case 16:
+          if (move.backward(move.mmToPulses(200, diameter, ppr))) state=17;
+          break;
+      case 17:
+          if (move.stopForMillis(mili)) state=18;
+          break;
+      case 18: // Pause after accelerateLeft
+          if (move.stopForMillis(mili)) state=19;
+          break;
+      case 19:
+          routine = 4; // Move to next routine
+          state = 0; // Reset state for the next routine
+          break;
+    }
+    break;
+    case 7:
+      switch(state){
+        case 0:
+          pwm1 = pwmh;
+          pwm2 = pwml;
+          pwm3 = pwmh;
+          pwm4 = pwml;
+          if(move.forward(move.mmToPulses(largo, diameter, ppr))) state++;
+        break;
+        case 1:
+          if(move.stopForMillis(2*(mili))) state++;
+          break;
+        case 2:
+          pwm1 = pwml;
+          pwm2 = pwmh;
+          pwm3 = pwml;
+          pwm4 = pwmh;
+          if(move.backward(move.mmToPulses(largo + 30.0, diameter, ppr))) state++;
+        break;
+        case 3:
+          if(move.stopForMillis(mili))state++;
+          break;
+        case 4:
+          if(move.right(move.mmToPulses(350, diameter, ppr))) state++;
+          break;
+        case 5:
+          pwm1 = 120; pwm2 = 120; pwm3 = 120; pwm4 = 120;
+          if(move.stopForMillis(2*(mili))) state++;
+          break;
+        case 6:
+          if (first == true){
+            digitalWrite(LED, HIGH);   // set the LED on
+            first = false; 
+            routine = 5;}
+          else if (first == false){
+            routine = 4; // Move to next routine
+          }          state = 0;
         break;
       }
-      break;
-    case 5: // Right Sweeps----------------------------------------------------
+    break;
+    // case 7: // Routine // Left reset -----------------------------------
+      //   switch(state){
+      //     case 0:
+      //       if (move.accelerateBackward(move.mmToPulses(150.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+      //       break;
+      //     case 1:
+      //       if (move.stopForMillis(mili)) state++;
+      //       break;
+      //     case 2:
+      //       if (move.accelerateLeft(move.mmToPulses(350.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+      //       break;
+      //     case 3:
+      //       if (move.stopForMillis(mili)) state++;
+      //       break;
+      //     case 4:
+      //       if(move.accelerateRight(move.mmToPulses(220, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
+      //       break;
+      //     case 5:
+      //       routine = 4; // Move to next routine
+      //       state = 0; // Reset state for the next routine
+      //       break;
+      //   }
+    case 8: // Routine 4 // Right Sweeps -------------------------------------------------------------------
       switch (state) {
-
       case 0:
-          pwm1 = 200;
-          pwm2 = 200;
-          pwm3 = 200;
-          pwm4 = 200;   
-        straight = false;
-        if (move.right(move.mmToPulses(350.0, 60, ppr))) state=1;
+        pwm1 = 150;
+        pwm2 = 150;
+        pwm3 = 150;
+        pwm4 = 150;
+        if (move.left(move.mmToPulses(170, diameter, ppr))) state=1;
         break;
       case 1:
-        straight = false;
-        if (move.accelerateBackward(move.mmToPulses(300.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=2;
-        break;
+        pwm1 = 150;
+        pwm2 = 150;
+        pwm3 = 150;
+        pwm4 = 150;
+        if (move.accelerateBackward(currentPulses = move.mmToPulses(50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=2;
+        break; 
       case 2:
         if (move.stopForMillis(mili)) state=3;
+        stopped = true;
         break;
       case 3:
-        pwm1 = 160;
-        pwm2 = 200;
-        pwm3 = 200;
-        pwm4 = 160;
-        if (move.accelerateForward(move.mmToPulses(largo / 3, 60, ppr), 210, 230, 20, 40, 0, 1)) state=4;
+        straight = true;
+        if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state=4;
         break;
       case 4:
-        pwm1 = 190;
-        pwm2 = 200;
-        pwm3 = 230;
-        pwm4 = 160;
-        // if (move.stopForMillis(mili)) state++;
-        move.stop();
-        delay(mili); 
-        state=5;
+        if (move.stopForMillis(mili)) state=5;
         stopped = true;
         break;
       case 5:
-        if (move.accelerateForward(move.mmToPulses(largo / 3 + largo / 3, 60, ppr), 210, 230, 20, 40, 0, 1)) state=6;
+        if (move.accelerateBackward(move.mmToPulses(largo + 50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=6;
+        straight = true;
         break;
       case 6:
-        straight = true;
-        pwm1 = 140;
-        pwm2 = 200;
-        pwm3 = 160;
-        pwm4 = 160;
-        if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=7;
+        if (move.stopForMillis(mili)) state=7;
+        stopped = true;
         break;
       case 7:
-        if (move.stopForMillis(mili)) state=8;
+        if (move.right(move.mmToPulses(350, diameter, ppr))) state=8;
+        straight = false;
         break;
       case 8:
         if (move.stopForMillis(mili)) state=9;
         break;
       case 9:
-        // if (repeat == false) {
-            routine = resetRoutine; // Move to next routine
-            state = 0; // Reset state for the next routine
-            // repeat = true;
-        // } else {
-        //     state = -1;
-        //     repeat = false;
-        // }
+        if (move.accelerateBackward(move.mmToPulses(100.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=10;
+        break;
+      case 10:
+        routine = 5; // Move to next routine
+        state = 0; // Reset state for the next routine
+        break;
       }
-      break;
-      case 6: // left reset -------------------------------------------------------------
-        switch(state){
-          case 0:
-              if (move.accelerateBackward(move.mmToPulses(250.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=1;
-              break;
-          case 1:
-              if (move.stopForMillis(mili)) state=2;
-              break;
-          case 2:
-              if (move.forward(move.mmToPulses(50, diameter, ppr))) state=3;
-              break;
-          case 3: // Pause after forward
-              if (move.stopForMillis(mili)) state=4;
-              break;
-          case 4:
-              alpha = 70;
-              if (ang_z >= alpha + beta) {
-                  move.rotateCW(pwm1, pwm2, pwm3, pwm4);
-              } else if (ang_z <= alpha - beta){
-                  move.rotateCCW(pwm1, pwm2, pwm3, pwm4);
-              } else if (ang_z > alpha - beta || ang_z < alpha + beta) state=5;
-              break;
-          case 5: // Pause after rotate
-              if (move.stopForMillis(mili)) state=6;
-              stopped = true;
-              break;
-          case 6:
-            pwm1 = 200;
-            pwm2 = 200;
-            pwm3 = 200;
-            pwm4 = 200;
-            if (move.left(move.mmToPulses(120, diameter, ppr))) state=7;
-            break;
-          case 7: // Pause after left
-            pwm1 = 220;
-            pwm2 = 200;
-            pwm3 = 200;
-            pwm4 = 220;
-            if (move.stopForMillis(mili)) state=8;
-            break;
-          case 8:
-            if (move.forward(move.mmToPulses(450, diameter, ppr))) state=9;
-            break;
-          case 9: // Pause after forward
-            pwm1 = 160;
-            pwm2 = 200;
-            pwm3 = 200;
-            pwm4 = 160;
-            if (move.stopForMillis(mili)) state=10;
-            break;
-          case 10:
-              if (move.backward(move.mmToPulses(20, diameter, ppr))) state=11;
-              break;
-          case 11: // Pause after backward
-              if (move.stopForMillis(mili)) state=12;
-              break;
-          case 12:
-              alpha = 0;
-              if (ang_z >= alpha + beta) {
-                  move.rotateCW(pwm1, pwm2, pwm3, pwm4);
-              } else if (ang_z <= alpha - beta){
-                  move.rotateCCW(pwm1, pwm2, pwm3, pwm4);
-              } else if (ang_z > alpha - beta || ang_z < alpha + beta) state=13;
-              break;
-          case 13: // Pause after rotate
-              if (move.stopForMillis(mili)) state=14;
-              break;
-          case 14:
-              //add microswitch activation
-              if (move.accelerateLeft(move.mmToPulses(230.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=15;
-              break;
-          case 15: // Pause after accelerateLeft
-              if (move.stopForMillis(mili)) state=16;
-              break;
-          case 16:
-              if (move.backward(move.mmToPulses(150, diameter, ppr))) state=17;
-              break;
-          case 17:
-              if (move.stopForMillis(mili)) state=18;
-              break;
-          case 18: // Pause after accelerateRight
-              if (move.stopForMillis(mili)) state=19;
-              break;
-          case 19:
-              routine = 4; // Move to next routine
-              state = 0; // Reset state for the next routine
-              break;
-        }
-        break;
-        // case 7: // Routine // Right reset -----------------------------------
-          //   switch(state){
-          //     case 0:
-          //       if (move.accelerateBackward(move.mmToPulses(150.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
-          //       break;
-          //     case 1:
-          //       if (move.stopForMillis(mili)) state++;
-          //       break;
-          //     case 2:
-          //       if (move.accelerateRight(move.mmToPulses(350.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
-          //       break;
-          //     case 3:
-          //       if (move.stopForMillis(mili)) state++;
-          //       break;
-          //     case 4:
-          //       if(move.accelerateLeft(move.mmToPulses(220, 60, ppr), 210, 230, 20, 40, 0, 1)) state++;
-          //       break;
-          //     case 5:
-          //       routine = 4; // Move to next routine
-          //       state = 0; // Reset state for the next routine
-          //       break;
-          //   }
-        case 8: // Routine 4 // Left Sweeps -------------------------------------------------------------------
-          switch (state) {
-          case 0:
-            pwm1 = 200;
-            pwm2 = 200;
-            pwm3 = 200;
-            pwm4 = 200;
-            if (move.right(move.mmToPulses(170, diameter, ppr))) state=1;
-            break;
-          case 1:
-            pwm1 = 160;
-            pwm2 = 200;
-            pwm3 = 200;
-            pwm4 = 160;
-            if (move.accelerateBackward(currentPulses = move.mmToPulses(100.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=2;
-            break; 
-          case 2:
-            if (move.stopForMillis(mili)) state=3;
-            stopped = true;
-            break;
-          case 3:
-            straight = true;
-            if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state=4;
-            break;
-          case 4:
-            if (move.stopForMillis(mili)) state=5;
-            stopped = true;
-            break;
-          case 5:
-            if (move.accelerateBackward(move.mmToPulses(largo + 50.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=6;
-            straight = true;
-            break;
-          case 6:
-            if (move.stopForMillis(mili)) state=7;
-            stopped = true;
-            break;
-          case 7:
-            if (move.left(move.mmToPulses(650, diameter, ppr))) state=8;
-            straight = false;
-            break;
-          case 8:
-            if (move.stopForMillis(mili)) state=9;
-            break;
-          case 9:
-            if (move.accelerateBackward(move.mmToPulses(100.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=10;
-            break;
-          case 10:
-            routine = 5; // Move to next routine
-            state = 0; // Reset state for the next routine
-            break;
-          }
-        break;
-          // case 8: //Routine 8 //Follow Ball
-          //   // if (pixy.ccc.numBlocks){
-          //   //   int x = pixy.ccc.blocks[i].m_x;
-          //   // if (x < 140)
-          //   // { 
-          //   //   move.simpleLeft();
-          //   //   Serial.print("MOVE RIGHT\n");
-          //   //   pixy.ccc.blocks[i].print();
-          //   // }else if (x > 240){
-          //   //   move.simpleRight();
-          //   //   Serial.print("MOVE LEFT\n");
-          //   //   pixy.ccc.blocks[i].print();
-
-          //   // } else if (x < 240 && x > 140){
-          //   //     pixy.ccc.blocks[i].print();
-          //   //     move.simpleForward();
-          //   // }
-          //   break;
-  // } 
-  }
-}
+    break;
+}}

@@ -5,6 +5,9 @@
 
 class Move {
   public:
+// Timeout for all movement functions (in milliseconds)
+    unsigned long moveTimeoutMs = 4000; // Default 3 seconds, can be changed by user
+
     Move(AF_DCMotor& m1, AF_DCMotor& m2, AF_DCMotor& m3, AF_DCMotor& m4,
          Encoders& encLeft, Encoders& encRight)
       : motor1(m1), motor2(m2), motor3(m3), motor4(m4),
@@ -56,32 +59,44 @@ class Move {
       motor4.run(BACKWARD);
     }
 
-    // Forward
+        // Forward
     bool forward(long pulses) {
-      if (!moving) startMove();
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+      }
       setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
-      return checkDone(pulses);
+      return checkDoneWithTimeout(pulses);
     }
 
     // Backward
     bool backward(long pulses) {
-      if (!moving) startMove();
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+      }
       setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
-      return checkDone(pulses);
+      return checkDoneWithTimeout(pulses);
     }
 
     // Left (strafe)
     bool left(long pulses) {
-      if (!moving) startMove();
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+      }
       setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
-      return checkDone(pulses);
+      return checkDoneWithTimeout(pulses);
     }
 
     // Right (strafe)
     bool right(long pulses) {
-      if (!moving) startMove();
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+      }
       setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
-      return checkDone(pulses);
+      return checkDoneWithTimeout(pulses);
     }
 
     // Diagonal: Forward-Left
@@ -233,119 +248,137 @@ bool accelerateToPWM(int initialPWM, int targetPWM, int steps = 20, unsigned lon
 }
 
 // Accelerate and then decelerate forward
-bool accelerateForward(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
-  static bool decelerating = false;
-  long currentPulses = encoderRight.getEncoderCount();
-  long decelStart = pulses * decelPercent;
+ bool accelerateForward(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+      static bool decelerating = false;
+      long currentPulses = encoderRight.getEncoderCount();
+      long decelStart = pulses * decelPercent;
 
-  if (!moving) {
-    startMove();
-    setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
-    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
-    delay(20);
-    decelerating = false;
-  }
-  setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+        setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
+        setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+        delay(20);
+        decelerating = false;
+      }
+      setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
 
-  if (!decelerating && currentPulses >= decelStart) {
-    decelerating = true;
-  }
+      if (!decelerating && currentPulses >= decelStart) {
+        decelerating = true;
+      }
 
-  if (!decelerating) {
-    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
-  } else {
-    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
-  }
+      if (!decelerating) {
+        accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+      } else {
+        accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+      }
 
-  return checkDone(pulses);
-}
+      return checkDoneWithTimeout(pulses);
+    }
+
 
 // Accelerate and then decelerate backward with variations
-bool accelerateBackward(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
-  static bool decelerating = false;
-  long currentPulses = encoderRight.getEncoderCount();
-  long decelStart = pulses * decelPercent;
+    bool accelerateBackward(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+      static bool decelerating = false;
+      long currentPulses = encoderRight.getEncoderCount();
+      long decelStart = pulses * decelPercent;
 
-  if (!moving) {
-    startMove();
-    setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
-    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
-    delay(20);
-    decelerating = false;
-  }
-  setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+        setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
+        setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+        delay(20);
+        decelerating = false;
+      }
+      setMotors(BACKWARD, BACKWARD, BACKWARD, BACKWARD);
 
-  if (!decelerating && currentPulses >= decelStart) {
-    decelerating = true;
-  }
+      if (!decelerating && currentPulses >= decelStart) {
+        decelerating = true;
+      }
 
-  if (!decelerating) {
-    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
-  } else {
-    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
-  }
+      if (!decelerating) {
+        accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+      } else {
+        accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+      }
 
-  return checkDone(pulses);
-}
-
+      return checkDoneWithTimeout(pulses);
+    }
 // Accelerate and then decelerate left with variations
-bool accelerateLeft(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
-  static bool decelerating = false;
-  long currentPulses = encoderLeft.getEncoderCount();
-  long decelStart = pulses * decelPercent;
+    bool accelerateLeft(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+      static bool decelerating = false;
+      long currentPulses = encoderLeft.getEncoderCount();
+      long decelStart = pulses * decelPercent;
 
-  if (!moving) {
-    startMove();
-    setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
-    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
-    delay(20);
-    decelerating = false;
-  }
-  setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+        setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
+        setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+        delay(20);
+        decelerating = false;
+      }
+      setMotors(BACKWARD, FORWARD, BACKWARD, FORWARD);
 
-  if (!decelerating && currentPulses >= decelStart) {
-    decelerating = true;
-  }
+      if (!decelerating && currentPulses >= decelStart) {
+        decelerating = true;
+      }
 
-  if (!decelerating) {
-    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
-  } else {
-    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
-  }
+      if (!decelerating) {
+        accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+      } else {
+        accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+      }
 
-  return checkDone(pulses);
-}
+      return checkDoneWithTimeout(pulses);
+    }
 
 // Accelerate and then decelerate right with variations
-bool accelerateRight(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
-  static bool decelerating = false;
-  long currentPulses = encoderRight.getEncoderCount();
-  long decelStart = pulses * decelPercent;
+    bool accelerateRight(long pulses, int initialPWM, int targetPWM, int steps = 20, unsigned long stepDelay = 20, int finalPWM = 0, float decelPercent = 0.7, int variation1 = 0, int variation2 = 0, int variation3 = 0, int variation4 = 0) {
+      static bool decelerating = false;
+      long currentPulses = encoderRight.getEncoderCount();
+      long decelStart = pulses * decelPercent;
 
-  if (!moving) {
-    startMove();
-    setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
-    setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
-    delay(20);
-    decelerating = false;
-  }
-  setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
+      if (!moving) {
+        startMove();
+        moveStartTime = millis();
+        setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
+        setIndividualSpeeds(initialPWM + variation1, initialPWM + variation2, initialPWM + variation3, initialPWM + variation4);
+        delay(20);
+        decelerating = false;
+      }
+      setMotors(FORWARD, BACKWARD, FORWARD, BACKWARD);
 
-  if (!decelerating && currentPulses >= decelStart) {
-    decelerating = true;
-  }
+      if (!decelerating && currentPulses >= decelStart) {
+        decelerating = true;
+      }
 
-  if (!decelerating) {
-    accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
-  } else {
-    accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
-  }
+      if (!decelerating) {
+        accelerateToPWM(initialPWM, targetPWM, steps, stepDelay, false);
+      } else {
+        accelerateToPWM(targetPWM, finalPWM, steps, stepDelay, true);
+      }
 
-  return checkDone(pulses);
-}
+      return checkDoneWithTimeout(pulses);
+    }
 
+  // New: checkDone with timeout
+    bool checkDoneWithTimeout(long pulses) {
+      long deltaLeft = abs(encoderLeft.getEncoderCount() - startLeft);
+      long deltaRight = abs(encoderRight.getEncoderCount() - startRight);
+      if (deltaLeft >= pulses || deltaRight >= pulses) {
+        stop();
+        return true;
+      }
+      if (millis() - moveStartTime > moveTimeoutMs) {
+        stop();
+        return true;
+      }
+      return false;
+    }
 
-  bool checkDone(long pulses) {
+    bool checkDone(long pulses) {
     long deltaLeft = abs(encoderLeft.getEncoderCount() - startLeft);
     long deltaRight = abs(encoderRight.getEncoderCount() - startRight);
     if (deltaLeft >= pulses || deltaRight >= pulses) {
@@ -366,6 +399,8 @@ bool accelerateRight(long pulses, int initialPWM, int targetPWM, int steps = 20,
     long startLeft = 0;
     long startRight = 0;
     bool moving = false;
+    unsigned long moveStartTime = 0; // For movement timeout
+
 
     void setMotors(uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4) {
       motor1.run(m1);
