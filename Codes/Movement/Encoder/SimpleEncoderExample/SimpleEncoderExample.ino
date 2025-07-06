@@ -7,8 +7,8 @@
 
 // Max number of Encoders object you can create is 4. This example only uses 2.
 
-Encoders leftEncoder(A15, A13);	// Create an Encoder object name leftEncoder, using digitalpin 2 & 3
-Encoders rightEncoder(A14 , A12); // Encoder object name rightEncoder using analog pin A0 and A1 
+Encoders leftEncoder(A14, A12);	// Create an Encoder object name leftEncoder, using digitalpin 2 & 3
+Encoders rightEncoder(A13 , A15); // Encoder object name rightEncoder using analog pin A0 and A1 
 
 void setup() {
   Serial.begin(9600);
@@ -31,5 +31,5 @@ void loop() {
     
     lastMilli = millis();
   }
-   delay(1000);
+  //  delay(1000);
 }
