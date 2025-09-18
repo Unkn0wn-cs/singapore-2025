@@ -206,12 +206,12 @@ void loop() {
   static int state = 0;
   static int beta = 8; //degree error
   static int alpha = 0;
-  static int mili = 1000; //delay
+  static int mili = 500; //delay
   int diameter = 60; //Diameter of the wheel in mm
   const long ppr = 1650; // Number of pulses for each movement ste
   int closed = 90;
   int open = 0;
-  int largo = 700;
+  int largo = 720;
 
   // //Read camera
   // pixy.ccc.getBlocks();
@@ -372,7 +372,7 @@ switch (routine) {// Routines --------------
         break; 
       case 1:
         if (move.stopForMillis(mili)) state = 2;
-        stopped = true;
+      stopped = true;
         break;
       case 2:
       if (first == true){
@@ -386,10 +386,11 @@ switch (routine) {// Routines --------------
         pwm3 = 245;
         pwm4 = 180;
         }
+        digitalWrite(enable34, HIGH);
         if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 3;
         break;
       case 3:
-        if (move.stopForMillis(mili)) state = 4;
+        if (move.stopForMillis(4*mili)) state = 4;
         stopped = true;
         break;
       case 4:
@@ -465,32 +466,38 @@ switch (routine) {// Routines --------------
         break;
       case 6:
         pwm1 = 190;
-        pwm2 = 245;
-        pwm3 = 245;
+        pwm2 = 240;
+        pwm3 = 240;
         pwm4 = 190;
         if(move.forward(move.mmToPulses(200, diameter, ppr))) state++;
         break;
       case 7:
-        if (move.stopForMillis(2*(mili)))state++;
+        if (move.stopForMillis(4*mili))state++;
         break;
       case 8:
-        if (move.right(move.mmToPulses(50, diameter, ppr))) state++;
+        if (move.backward(move.mmToPulses(100, diameter, ppr))) state++;
         break;
       case 9:
         if (move.stopForMillis(mili)) state++;
         break;
       case 10:
+        if (move.right(move.mmToPulses(50, diameter, ppr))) state++;
+        break;
+      case 11:
+        if (move.stopForMillis(mili)) state++;
+        break;
+      case 12:
         straight = true;
         pwm1 = 170;
         pwm2 = 245;
         pwm3 = 245;
         pwm4 = 170;
-        if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=11;
+        if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=13;
         break;
-      case 11:
-        if (move.stopForMillis(mili / 2)) state=12;
+      case 13:
+        if (move.stopForMillis(mili / 2)) state=14;
         break;
-      case 12:
+      case 14:
             routine = resetRoutine; // Move to next routine
             state = 0; // Reset state for the next routine
       }
@@ -568,7 +575,6 @@ switch (routine) {// Routines --------------
               break;
           case 13: // Pause after rotate
               if (move.stopForMillis(mili)) state=14;
-              digitalWrite(enable34, HIGH);
               break;
           case 14:
               //add microswitch activation
@@ -614,7 +620,7 @@ switch (routine) {// Routines --------------
             if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state=4;
             break;
           case 4:
-            if (move.stopForMillis(mili)) state=5;
+            if (move.stopForMillis(4*mili)) state=5;
             stopped = true;
             break;
           case 5:

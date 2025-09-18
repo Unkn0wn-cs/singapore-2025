@@ -193,7 +193,7 @@ void loop() {
   static int state = 0;
   static int beta = 8; //degree error
   static int alpha = 0;
-  static int mili = 1000; //delay
+  static int mili = 500; //delay
   int diameter = 60; //Diameter of the wheel in mm
   const long ppr = 1020; // Number of pulses for each movement ste
   int closed = 180;
@@ -379,10 +379,11 @@ switch (routine) {// Routines --------------
         pwm3 = 220;
         pwm4 = 240;
         }
+        digitalWrite(enable34, HIGH);
         if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state = 3;
         break;
       case 3:
-        if (move.stopForMillis(mili)) state = 4;
+        if (move.stopForMillis(4*mili)) state = 4;
         stopped = true;
         break;
       case 4:
@@ -457,23 +458,30 @@ switch (routine) {// Routines --------------
           stopped = true;
           break;
         case 5:
-          if (move.accelerateForward(move.mmToPulses(largo / 3 + largo / 3 + 140, 60, ppr), 210, 230, 20, 40, 0, 1)) state=6;
+          if (move.accelerateForward(move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state=6;
           break;
         case 6:
-          if (move.stopForMillis(2*(mili))) state++;
+          pwm1 = 215;
+          pwm2 = 230;
+          pwm3 = 230;
+          pwm4 = 215;
+          if(move.forward(move.mmToPulses(200, diameter, ppr))) state++;
           break;
         case 7:
+          if (move.stopForMillis(4*(mili))) state++;
+          break;
+        case 8:
           straight = true;
         pwm1 = 215;
         pwm2 = 230;
         pwm3 = 230;
         pwm4 = 215;
-          if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=8;
-          break;
-        case 8:
-          if (move.stopForMillis(mili)) state=9;
+          if (move.accelerateBackward(move.mmToPulses(largo + 20.0, 60, ppr), 210, 230, 20, 40, 0, 1)) state=9;
           break;
         case 9:
+          if (move.stopForMillis(mili)) state=10;
+          break;
+        case 10:
           // if (repeat == false) {
               routine = resetRoutine; // Move to next routine
               state = 0; // Reset state for the next routine
@@ -556,7 +564,6 @@ switch (routine) {// Routines --------------
               } else if (ang_z > alpha - beta || ang_z < alpha + beta) state=13;
               break;
           case 13: // Pause after rotate
-              digitalWrite(enable34, HIGH);
               if (move.stopForMillis(mili)) state=14;
               break;
           case 14:
@@ -625,7 +632,7 @@ switch (routine) {// Routines --------------
             if (move.accelerateForward(currentPulses = move.mmToPulses(largo, 60, ppr), 210, 230, 20, 40, 0, 1)) state=4;
             break;
           case 4:
-            if (move.stopForMillis(mili)) state=5;
+            if (move.stopForMillis(4*mili)) state=5;
             stopped = true;
             break;
           case 5:
