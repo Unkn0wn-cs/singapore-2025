@@ -1,3 +1,5 @@
+    int LED = 34;
+
 #include <Arduino.h>
 #include <AFMotor.h>
 #include <QuadratureEncoder.h>
@@ -35,8 +37,8 @@ Pixy2 pixy;
 Servo myservo;
 
 //Pixy Cam---------------------------------------------
-int purpleSignature = 1;
-int orangeSignature = 2;
+int purpleSignature = 2;
+int orangeSignature = 1;
 int redSignature = 3;
 
 // --- Microswitch Gyro Reset Extension ----------------------------------------------------------------
@@ -51,8 +53,8 @@ bool lastSideSwitchState = HIGH;    // for edge detection
 
 //Rotor variables -------------------------------------------------------------------------
 const int enable34 = 23; // L293D pin 9
-const int input3   = 41; // L293D pin 10
-const int input4   = 31; // L293D pin 15
+const int input3   = 25; // L293D pin 10
+const int input4   = 24; // L293D pin 15
 
 // variables for GyroScope ----------------------------------------------------------------------------
 // Valores RAW (sin procesar) del acelerometro y giroscopio en los ejes x,y,z
@@ -85,8 +87,6 @@ int open = 0;
 
 int beta = 8; //degree error
 int alpha = 0;
-  
-int lenght = 1100;
 
 const int mili = 2000; //delay
 const int diameter = 60; //Diameter of the wheel in mm
@@ -102,11 +102,14 @@ enum side {
   LEFT
 }; 
 
-//conditional----------------------------------------------------------------------------------------------- aqui Samuel 
+//conditional------------------------------------------------------------------------------------- aqui Samuel 
 const long pulses = 1020; // Number of pulses for each movement step
-side robotSide = LEFT;
+side robotSide = RIGHT;
+int lenght = 0;
 
-
+//servo--------------------------------------------
+int closedGate = 170;
+int openGate = 55;
 
 // functions-----------------------------------------------------------------------------
 
@@ -114,13 +117,12 @@ int mm(int mm){
   return(move.mmToPulses(mm, diameter, pulses));
 }
 
-bool outerForward(int mili){
+void outerForward(){
   if (robotSide == RIGHT){
     move.begin(pwmf[1] + 20, pwmf[2], pwmf[3], pwmf[4] + 20);  
   }else if (robotSide == LEFT){
     move.begin(pwmf[1], pwmf[2] + 80, pwmf[3] + 80, pwmf[4]);  
   }
-  if(move.forwardp(mm(mili))) return true;
 }
 
 bool inner(int mili){
@@ -174,11 +176,25 @@ void resetGyroAngles() {
   tiempo_prev = millis(); 
 }
 
-void setup() { //---------------------------------------------------------------------------------------------
+  void blink(){
+        digitalWrite(LED, HIGH);
+        delay(500);
+        digitalWrite(LED, LOW);
+        delay(500);
+        return;
+  }
+
+void setup() { //-----------------------------------------------------------------------------------------------------------------------------------///
 
   Serial.begin(9600);
+  if(robotSide == RIGHT){
+    lenght = 750;
+  }else{
+    lenght = 1000;
+  } 
   //servo--------------------------------------------
   myservo.attach(9); 
+  myservo.write(closedGate);
   
   //rotor
   pinMode(enable34, OUTPUT);
@@ -186,19 +202,19 @@ void setup() { //---------------------------------------------------------------
   pinMode(input4, OUTPUT);
 
     // LED DEBUGER SUPERIOR GRAN RESERVA PRO MAX ROJO TRUMP MAGA UNIMET #FORMAFALICA
-    pinMode(34, OUTPUT);
+    pinMode(LED, OUTPUT);
 
 
-  digitalWrite(enable34, HIGH);
-  digitalWrite(input3, LOW);
-  digitalWrite(input4, HIGH);
+  digitalWrite(enable34, 50);
+  digitalWrite(input3, HIGH);
+  digitalWrite(input4, LOW);
 
   // //mpu 
-  // Wire.begin();           // Iniciando I2C
-  // sensor.initialize();    // Iniciando el sensor
+  Wire.begin();           // Iniciando I2C
+  sensor.initialize();    // Iniciando el sensor
 
-  // if (sensor.testConnection()) Serial.println("Sensor iniciado correctamente");
-  // else Serial.println("Error al iniciar el sensor");
+  if (sensor.testConnection()) Serial.println("Sensor iniciado correctamente");
+  else Serial.println("Error al iniciar el sensor");
 
   tiempo_prev = millis();
   resetGyroAngles();
@@ -207,38 +223,59 @@ void setup() { //---------------------------------------------------------------
   pinMode(backSwitchPin, INPUT_PULLUP);
   pinMode(sideSwitchPin, INPUT_PULLUP);
 
-  // pixy.init();
-  // pixy.setLamp(255, 0);
-  //   //Calculate purple position
-  // int center_y = 55;
-  // int center_x = 200;
 
-  // for (int i = 0; i < 10; i++){
-  //   delay(5);
-  // pixy.ccc.getBlocks();
-  // if (pixy.ccc.numBlocks > 0) {
-  //   for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-  //     if (pixy.ccc.blocks[i].m_signature == purpleSignature) {
+  pixy.init();
+  pixy.setLamp(200, 0);
+  delay(2000);
+    //Calculate purple position
+  int center_y = 32;
+  int center_x = 200;
 
-  //       int ix = pixy.ccc.blocks[i].m_x; 
-  //       int iy = pixy.ccc.blocks[i].m_y;
-  //       //definir routine 
-  //       if (ix < center_x && iy < center_y){
-  //         routine = 1;
-  //         Serial.print("upper left corner, case 1");
-  //       } else if (ix > center_x && iy < center_y){
-  //         routine = 3;
-  //         Serial.print("upper right corner, case 3");
-  //       } else if (ix < center_x && iy > center_y){
-  //         routine = 0;
-  //         Serial.print("lower left corner, case 0");
-  //       } else if (ix > center_x && iy > center_y){
-  //         routine = 2;
-  //         Serial.print("lower Right corner, case 2");
-  //       }
-  // }} }}
-  // pixy.m_link.close();
-  
+void purple();{
+  for (int i = 0; i < 10; i++){
+    
+    pixy.ccc.getBlocks();
+    if (pixy.ccc.numBlocks > 0) {
+      for (int i = 0; i < pixy.ccc.numBlocks; i++) {
+        if (pixy.ccc.blocks[i].m_signature == purpleSignature) {
+
+          int ix = pixy.ccc.blocks[i].m_x; 
+          int iy = pixy.ccc.blocks[i].m_y;
+          //definir routine 
+          if (ix < center_x && iy < center_y){
+            routine = 0;
+            blink();
+            return;
+            Serial.print("upper left corner, case 1");
+          } else if (ix > center_x && iy < center_y){
+            routine = 1;
+            blink(); blink();
+            return;
+            Serial.print("upper right corner, case 3");
+          } else if (ix < center_x && iy > center_y){
+            routine = 2;
+            blink(); blink(); blink();
+            return;
+            Serial.print("lower left corner, case 0");
+          } else if (ix > center_x && iy > center_y){
+            routine = 3;
+            blink(); blink(); blink(); blink();
+            return;
+            Serial.print("lower Right corner, case 2");
+          }
+        } 
+      } 
+      } 
+      delay(17);
+  }
+}
+
+
+  pixy.m_link.close();
+    delay(20);
+    pixy.setLamp(0, 0);
+
+
 
 
 
@@ -246,10 +283,7 @@ void setup() { //---------------------------------------------------------------
 
 }
 
-void loop() {
-  //notas -----------------------------------------------------------
-  // int diameter = ::diameter, int pulses = ::ppr
-
+void loop() {//---------------------------------------------------------------------------------------------------------------------------------------------////
 
   // Handle switch press
   bool currentBackSwitchState = digitalRead(backSwitchPin);
@@ -263,29 +297,32 @@ void loop() {
   lastBackSwitchState = currentBackSwitchState;
 
 
+// MPU code
+    const float GYRO_SENSITIVITY = 131.0; // MPU6050 scale factor for ±250°/s
 
-  //MPU code
-  // Leer las aceleraciones y velocidades angulares-----------------------------------
-  // int ang_z = filterGyro(sensor);
-  // sensor.getRotation(&gx, &gy, &gz);
+    // Get filtered Z-axis rotation rate
+    float gz_filtered = filterGyro(sensor); // Should return raw gyro Z in deg/s
 
-  // dt = (millis() - tiempo_prev) / 1000.0;
-  // tiempo_prev = millis();
+    // Time delta in seconds
+    unsigned long now = millis();
+    dt = (now - tiempo_prev) / 1000.0;
+    tiempo_prev = now;
 
-  // ang_z = ang_z_prev + (gz / 131.0) * dt; // Z-axis rotation using gyroscope only
 
-  // ang_z_prev = ang_z;
+    // Integrate angular velocity to get angle
+    ang_z = ang_z_prev + (gz_filtered / GYRO_SENSITIVITY) * dt;
+    ang_z_prev = ang_z;
+    
+  
 
-  // Serial.print("\tRotacion en Z: ");
-  // Serial.println(ang_z);
 
 
   //check if the robot is centered before acting---------------------------------
-  if (ang_z >= alpha + beta) {
-    routine = 8;
-  } else if (ang_z <= alpha - beta){
-    routine = 8;
-  }
+  // if (ang_z >= alpha + beta) {
+  //   routine = 8;
+  // } else if (ang_z <= alpha - beta){
+  //   routine = 8;
+  // }
 
     // routine 0-3 = case 0-3 ball 
     // routine 4 Simple Lanes
@@ -293,12 +330,137 @@ void loop() {
     // routine 6 simple reset
     // routine 7 Corner checking reset
     // routine 8 Reorient itself
+    // routine 10 debugging
+
 
 switch (routine) {
+  case 0:
+    switch(state){
+      case 0:
+        if(move.backward(mm(100))) state++;
+        break;
+      case 1:
+        myservo.write(closedGate);
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 2:
+        if(move.forward(mm(400))) state++;
+        break;
+      case 3:
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 4:
+        myservo.write(openGate);
+        if(move.forward(mm(400))) state++;
+        break;
+      case 5:
+        myservo.write(closedGate);
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 6:
+        routine = 6; state = 0;
+        if (robotSide == RIGHT){
+          lane = OUTER;
+        } else {lane = INNER;}
+      }
+    break;
+  case 1:
+    switch(state){
+      case 0:
+        if (move.right(mm(250))) state++;
+        break;
+      case 1:
+        if(move.backward(mm(100))) state++;
+        break;
+      case 2:
+        myservo.write(closedGate);
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 3:
+        if(move.forward(mm(400))) state++;
+        break;
+      case 4:
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 5:
+        myservo.write(openGate);
+        if(move.forward(mm(400))) state++;
+        break;
+      case 6:
+        myservo.write(closedGate);
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 7:
+        routine = 6; state = 0;
+        lane = MIDDLE;
+      }
+    break;
+  case 2:
+    switch(state){
+      case 0:
+        if(move.backward(mm(100))) state++;
+        break;
+      case 1:
+        myservo.write(openGate);
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 2:
+        if(move.forward(mm(550))) state++;
+        break;
+      case 3:
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 4:
+        myservo.write(closedGate);
+        if(move.forward(mm(200))) state++;
+        break;
+      case 5:
+        routine = 6; state = 0;
+        if (robotSide == RIGHT){
+          lane = OUTER;
+        } else {lane = INNER;}
+    }
+    break;
+  case 3:
+    switch(state){
+      case 0:
+        if(move.right(mm(250))) state++;
+        break;
+      case 1:
+        if(move.backward(mm(100))) state++;
+        break;
+      case 2:
+        myservo.write(openGate);
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 3:
+        if(move.forward(mm(550))) state++;
+        break;
+      case 4:
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 5:
+        myservo.write(closedGate);
+        if(move.forward(mm(200))) state++;
+        break;
+      case 6:
+        routine = 6; state = 0;
+        if (robotSide == RIGHT){
+          lane = OUTER;
+        } else {lane = INNER;}
+    }
+    break;
+  
+
+
+
+
+
+  ////-------------------------------LOOOP-----------------------------------------------------------////
   case 4:
     switch(state){
       case -1:
-        if(inner(180)) state++;
+        if(inner(250)) state++;
         break;
       case 0:
         if(move.backward(mm(180))) state++;
@@ -311,19 +473,24 @@ switch (routine) {
         if (lane == MIDDLE){
           if(move.forward(mm(lenght))) state++;
         } else if(lane == OUTER){
-          if(outerForward(lenght)) state++;
+          outerForward();
+          if(move.forward(mm(lenght))) state++; move.moveBeginForward();
         }
         break;
       case 3:
-        if(move.stopForMillis(2*mili)) state++;
+        if(move.stopForMillis(mili)) state++;
         break;
       case 4:
-        if (robotSide == RIGHT || first == false){
+
+        if (robotSide == RIGHT && first == false){
           if (lane == OUTER){
             lane = MIDDLE;
           }else if(lane == MIDDLE){
             lane = INNER;
           }
+        } else if (robotSide == RIGHT && first == true){
+          lane = OUTER;
+          first = false;
         }else if (robotSide == LEFT){
           first = false;
           if (lane = OUTER){
@@ -334,6 +501,23 @@ switch (routine) {
             return(1);
           }
         }
+
+        // blink();
+        // //cases for debugging
+        // if (lane == INNER && first  == false){
+        //   routine = 10;
+        //   state = 1;
+        //   return;
+        // } else if (lane == MIDDLE){
+        //   routine = 10;
+        //   state = 2;
+        //   return;
+        // } else if (lane == OUTER){
+        //   routine = 10;
+        //   state = 3;
+        //   return;
+        // }
+
         routine = 6;
         state = 0;      
       break;
@@ -360,20 +544,25 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 6:
-        if(innerDiagonal((200))) state++;
-        digitalWrite(34, HIGH); 
+        if (robotSide == RIGHT){
+          if(move.forwardLeft(mm(400))) state++;
+        } else{
+          if(move.forwardRight(mm(400))) state++;
+        }
+        digitalWrite(LED, HIGH); 
         break;
       case 7:
         if (move.stopForMillis(mili)) state++;
-        digitalWrite(34, LOW);
+        digitalWrite(LED, LOW);
         break;
       case 8:
-        if(innerDiagonal((200))) state++;
-        digitalWrite(34, HIGH); 
+        if(move.forward(mm(lenght/3 + 60))){state++;}
+
+        digitalWrite(LED, HIGH); 
         break;
       case 9:
         if(move.stopForMillis(2*mili)) state++;
-        digitalWrite(34, LOW);
+        digitalWrite(LED, LOW);
         break;
       case 10:
         if(outer(50)) state++;
@@ -391,16 +580,16 @@ switch (routine) {
   case 6:
     switch(state){
       case 0:
-        if(move.backward(mm(lenght + 20))) state++;
+        if(move.backward(mm(lenght + 60))) state++;
         break;
       case 1:
-        if(move.stopForMillis(mili*3)) state++;
+        if(move.stopForMillis(mili)) state++;
         break;
       case 2:
         if(outer(350)) state++;
         break;
       case 3:
-        if(move.stopForMillis(mili*3)) state++;
+        if(move.stopForMillis(mili)) state++;
         break;
       case 4:
         if(lane == INNER){
@@ -416,48 +605,53 @@ switch (routine) {
     }
   break;
   case 7:
-    float time;
+   
     switch(state){
       case 0:
-        if(move.backward(mm(lenght + 20))) state++;
+        if(move.backward(mm(lenght + 100))) state++;
         break;
       case 1:
         if(move.stopForMillis(mili)) state++;
         break;
       case 2:
-        if(move.forward(50)) state++;
+        if(move.forward(80)) state++;
         break;
       case 3:
         digitalWrite(enable34, LOW);
         if(move.stopForMillis(mili)) state++;
         break;
       case 4:
-        static bool rotation = false;
-        if (rotation == false){
-          time = millis();
-          rotation = true;
-        } if (time + 1200 < millis()) state++;
+        digitalWrite(LED, HIGH);
+        // static bool rotation = false;
+        // if (rotation == false){
+        //   time = millis();
+        //   rotation = true;
+        // } if (time + 1200 < millis()) state++;
 
-        if (robotSide = LEFT){
-          alpha = -70;
-        } else {alpha  = 70;}
+        if (robotSide == LEFT){
+          alpha = -80;
+        } else {alpha  = 80;}
         
         if (ang_z >= alpha + beta) {
             move.rotateCCW(200, 200, 200, 200);
         } else if (ang_z <= alpha - beta){
             move.rotateCW(200, 200, 200, 200);
-        } else if (ang_z > alpha - beta || ang_z < alpha + beta) state++;
+        } else {
+          state++;
+        } 
+        break;
       case 5:
         if(move.stopForMillis(mili)) state++;
+        digitalWrite(LED, LOW);
         break;
       case 6:
-        if(outer(100)) state++;
+        if(outer(mm(100))) state++;
         break;
       case 7:
         if(move.stopForMillis(mili/2)) state++;
         break;
       case 8:
-        if(move.forward(580)) state++;
+        if(move.forward(mm(550))) state++;
         break;
       case 9:
         digitalWrite(enable34, HIGH);
@@ -469,22 +663,27 @@ switch (routine) {
         break;
       case 11:
         if(move.stopForMillis(mili/2)) state++;
-        rotation = false;
+        // rotation = false;
         break;
       case 12:
-        if (rotation == false){
-          time = millis();
-          rotation = true;
-        } if (time + 1200 < millis()) state++;
+        digitalWrite(LED, HIGH);
+        // if (rotation == false){
+        //   time = millis();
+        //   rotation = true;
+        // } if (time + 1200 < millis()) state++;
 
         alpha = 0;
         if (ang_z >= alpha + beta) {
             move.rotateCCW(200, 200, 200, 200);
-        } else if (ang_z <= alpha - beta){
+        } else if (ang_z <= alpha - beta) {
             move.rotateCW(200, 200, 200, 200);
-        } else if (ang_z > alpha - beta || ang_z < alpha + beta) state++;
+        } else {
+            state++;
+        }
+        break;
       case 13:
         if(move.stopForMillis(mili)) state++;
+        digitalWrite(LED, LOW);
         break;
       case 14:
         if(outer(120)) state++;
@@ -504,9 +703,46 @@ switch (routine) {
         lane = OUTER;
     }
   break;
+  case 10:
+    move.stop();
+    switch(state){
+      case 0:
+        routine = 6;
+        state = 0;
+        break;
+      case 1:
+        blink();
+        state = 0;
+        break;
+      case 2:
+        blink();
+        blink();
+        state = 0;
+        break;
+      case 3:
+        blink();
+        blink();
+        blink();
+        state = 0;
+        break;
+      case 4:
+        for (int i = 0; i < 4; i++){
+          blink();
+        } 
+        state = 0;
+        break;
+      case 5:
+        for (int i = 0; i < 4; i++){
+          blink();
+        } 
+        state = 0;
+        break;
+    }
+    break;
   // case 8:
 } 
-  
 
-  delay(5); //delay for stability introduced july 
+
+
+  delay(5); //delay for stability introduced july 😝
 }
