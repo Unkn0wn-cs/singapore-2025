@@ -104,7 +104,7 @@ enum side {
 
 //conditional------------------------------------------------------------------------------------- aqui Samuel 
 const long pulses = 1020; // Number of pulses for each movement step
-side robotSide = RIGHT;
+side robotSide = LEFT;
 int lenght = 0;
 
 //servo--------------------------------------------
@@ -296,6 +296,16 @@ void loop() {//-----------------------------------------------------------------
   }
   lastBackSwitchState = currentBackSwitchState;
 
+  bool currentSideSwitchState = digitalRead(sideSwitchPin);
+  if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH) {
+
+    // Button pressed
+    onSwitchPress();
+    state++;
+    Serial.println("Gyro angles reset by microswitch!");
+  }
+  lastSideSwitchState = currentSideSwitchState;
+
 
 // MPU code
     const float GYRO_SENSITIVITY = 131.0; // MPU6050 scale factor for ±250°/s
@@ -344,14 +354,15 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 2:
-        if(move.forward(mm(400))) state++;
+        if(move.forward(mm(550))) state++;
         break;
       case 3:
-        if(move.stopForMillis(mili)) state++;
+        // if(move.stopForMillis(mili)) 
+        state++;
         break;
       case 4:
         myservo.write(openGate);
-        if(move.forward(mm(400))) state++;
+        if(move.forward(mm(300))) state++;
         break;
       case 5:
         myservo.write(closedGate);
@@ -377,14 +388,15 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 3:
-        if(move.forward(mm(400))) state++;
+        if(move.forward(mm(550))) state++;
         break;
       case 4:
-        if(move.stopForMillis(mili)) state++;
+        // if(move.stopForMillis(mili))
+        state++;
         break;
       case 5:
         myservo.write(openGate);
-        if(move.forward(mm(400))) state++;
+        if(move.forward(mm(300))) state++;
         break;
       case 6:
         myservo.write(closedGate);
@@ -408,7 +420,8 @@ switch (routine) {
         if(move.forward(mm(550))) state++;
         break;
       case 3:
-        if(move.stopForMillis(mili)) state++;
+        // if(move.stopForMillis(mili)) 
+        state++;
         break;
       case 4:
         myservo.write(closedGate);
@@ -437,7 +450,8 @@ switch (routine) {
         if(move.forward(mm(550))) state++;
         break;
       case 4:
-        if(move.stopForMillis(mili)) state++;
+        // if(move.stopForMillis(mili)) 
+        state++;
         break;
       case 5:
         myservo.write(closedGate);
@@ -445,9 +459,7 @@ switch (routine) {
         break;
       case 6:
         routine = 6; state = 0;
-        if (robotSide == RIGHT){
-          lane = OUTER;
-        } else {lane = INNER;}
+        lane = MIDDLE;
     }
     break;
   
@@ -493,11 +505,11 @@ switch (routine) {
           first = false;
         }else if (robotSide == LEFT){
           first = false;
-          if (lane = OUTER){
+          if (lane == OUTER){
             lane = MIDDLE;
-          } else if (lane = MIDDLE) {
+          } else if (lane == MIDDLE) {
             lane = INNER;
-          } else if (lane = INNER) {
+          } else if (lane == INNER) {
             return(1);
           }
         }
@@ -526,7 +538,7 @@ switch (routine) {
   case 5:
     switch(state){
       case 0:
-        if(inner(320)) state++;
+        if(inner(360)) state++;
         break;
       case 1:
         if(move.stopForMillis(mili)) state++;
@@ -541,7 +553,7 @@ switch (routine) {
         if(move.forward(mm(lenght / 3))) state++;
         break;
       case 5:
-        if(move.stopForMillis(mili)) state++;
+        state++;
         break;
       case 6:
         if (robotSide == RIGHT){
@@ -552,13 +564,10 @@ switch (routine) {
         digitalWrite(LED, HIGH); 
         break;
       case 7:
-        if (move.stopForMillis(mili)) state++;
-        digitalWrite(LED, LOW);
+        state++;
         break;
       case 8:
-        if(move.forward(mm(lenght/3 + 60))){state++;}
-
-        digitalWrite(LED, HIGH); 
+        if(move.forward(mm(lenght/2.2 + 60))){state++;}
         break;
       case 9:
         if(move.stopForMillis(2*mili)) state++;
@@ -586,7 +595,7 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 2:
-        if(outer(350)) state++;
+        if(outer(400)) state++;
         break;
       case 3:
         if(move.stopForMillis(mili)) state++;
@@ -672,7 +681,11 @@ switch (routine) {
         //   rotation = true;
         // } if (time + 1200 < millis()) state++;
 
-        alpha = 0;
+        if (robotSide == LEFT){
+          alpha = 25;
+        } else {alpha  = -25;}
+
+
         if (ang_z >= alpha + beta) {
             move.rotateCCW(200, 200, 200, 200);
         } else if (ang_z <= alpha - beta) {
@@ -692,10 +705,10 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 16:
-        if(move.backward(200)) state++;
+        if(move.backward(mm(200))) state++;
         break;
       case 17:
-        if(move.stopForMillis(mili)) state++;
+        state++;
         break;  
       case 18:
         routine = 4;
