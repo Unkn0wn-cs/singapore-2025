@@ -89,7 +89,7 @@ class Move {
 
     bool forwardp(long pulses) {
       if (!moving) {
-        moveBeginForward();
+
         startMove();
         moveStartTime = millis();
       }

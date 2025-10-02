@@ -16,8 +16,8 @@ AF_DCMotor motor2(2); // Motor 2 on the Adafruit Motor Shield
 AF_DCMotor motor3(3); // Motor 3 on the Adafruit Motor Shield
 AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
 
-  int pwmf[4] = {220, 230, 230, 220};
-  int pwms[4] = {200, 200, 200, 200};
+  int pwmf[4] = {220, 232, 232, 220};
+  int pwms[4] = {200, 210, 200, 200};
   // int pwmf[4] = {230, 220, 220, 230};
   // int pwms[4] = {200, 200, 200, 200};
   
@@ -88,7 +88,7 @@ int open = 0;
 int beta = 8; //degree error
 int alpha = 0;
 
-const int mili = 2000; //delay
+const int mili = 750; //delay
 const int diameter = 60; //Diameter of the wheel in mm
 
 enum rlane {
@@ -190,7 +190,7 @@ void setup() { //---------------------------------------------------------------
   if(robotSide == RIGHT){
     lenght = 750;
   }else{
-    lenght = 1000;
+    lenght = 1100;
   } 
   //servo--------------------------------------------
   myservo.attach(9); 
@@ -226,40 +226,40 @@ void setup() { //---------------------------------------------------------------
 
   pixy.init();
   pixy.setLamp(200, 0);
-  delay(2000);
+  delay(1000);
     //Calculate purple position
   int center_y = 32;
   int center_x = 200;
 
 void purple();{
-  for (int i = 0; i < 10; i++){
+  for (int i = 0; i < 60; i++){
     
     pixy.ccc.getBlocks();
     if (pixy.ccc.numBlocks > 0) {
       for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-        if (pixy.ccc.blocks[i].m_signature == purpleSignature) {
+        if (pixy.ccc.blocks[i].m_signature == purpleSignature && pixy.ccc.blocks[i].m_age > 85) {
 
           int ix = pixy.ccc.blocks[i].m_x; 
           int iy = pixy.ccc.blocks[i].m_y;
           //definir routine 
           if (ix < center_x && iy < center_y){
             routine = 0;
-            blink();
+            // blink();
             return;
             Serial.print("upper left corner, case 1");
           } else if (ix > center_x && iy < center_y){
             routine = 1;
-            blink(); blink();
+            // blink(); blink();
             return;
             Serial.print("upper right corner, case 3");
           } else if (ix < center_x && iy > center_y){
             routine = 2;
-            blink(); blink(); blink();
+            // blink(); blink(); blink();
             return;
             Serial.print("lower left corner, case 0");
           } else if (ix > center_x && iy > center_y){
             routine = 3;
-            blink(); blink(); blink(); blink();
+            // blink(); blink(); blink(); blink();
             return;
             Serial.print("lower Right corner, case 2");
           }
@@ -472,7 +472,7 @@ switch (routine) {
   case 4:
     switch(state){
       case -1:
-        if(inner(250)) state++;
+        if(inner(210)) state++;
         break;
       case 0:
         if(move.backward(mm(180))) state++;
@@ -486,14 +486,13 @@ switch (routine) {
           if(move.forward(mm(lenght))) state++;
         } else if(lane == OUTER){
           outerForward();
-          if(move.forward(mm(lenght))) state++; move.moveBeginForward();
+          if(move.forwardp(mm(lenght))) state++; move.moveBeginForward();
         }
         break;
       case 3:
         if(move.stopForMillis(mili)) state++;
         break;
       case 4:
-
         if (robotSide == RIGHT && first == false){
           if (lane == OUTER){
             lane = MIDDLE;
@@ -538,7 +537,7 @@ switch (routine) {
   case 5:
     switch(state){
       case 0:
-        if(inner(360)) state++;
+        if(inner(300)) state++;
         break;
       case 1:
         if(move.stopForMillis(mili)) state++;
@@ -550,7 +549,7 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 4:
-        if(move.forward(mm(lenght / 3))) state++;
+        if(move.forward(mm())) state++;
         break;
       case 5:
         state++;
@@ -654,13 +653,18 @@ switch (routine) {
         digitalWrite(LED, LOW);
         break;
       case 6:
-        if(outer(mm(100))) state++;
+        if(outer(mm(200))) state++;
         break;
       case 7:
         if(move.stopForMillis(mili/2)) state++;
         break;
       case 8:
-        if(move.forward(mm(550))) state++;
+          // if (robotSide == RIGHT){
+          //   move.begin(pwmf[1] + 20, pwmf[2], pwmf[3], pwmf[4] + 20);  
+          // }else if (robotSide == LEFT){
+          //   move.begin(pwmf[1], pwmf[2] + 80, pwmf[3] + 80, pwmf[4]);  
+          // }
+          if(move.forward(mm(550))) state++;  
         break;
       case 9:
         digitalWrite(enable34, HIGH);
