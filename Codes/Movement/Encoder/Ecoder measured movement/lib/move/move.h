@@ -87,9 +87,15 @@ class Move {
       motor4.run(BACKWARD);
     }
 
-    bool forwardp(long pulses) {
+    bool forwardp(long pulses, bool position) {
+      int d = 15;
+      if (position == false){
+        begin(pwmFwd1 + d, pwmFwd2, pwmFwd3, pwmFwd4 + d);  
+      }else{
+        begin(pwmFwd1 - d, pwmFwd2, pwmFwd3 ,pwmFwd4 - d);  
+      }
+      
       if (!moving) {
-
         startMove();
         moveStartTime = millis();
       }

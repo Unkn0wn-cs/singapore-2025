@@ -15,11 +15,12 @@ AF_DCMotor motor1(1); // Motor 1 on the Adafruit Motor Shield
 AF_DCMotor motor2(2); // Motor 2 on the Adafruit Motor Shield
 AF_DCMotor motor3(3); // Motor 3 on the Adafruit Motor Shield
 AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
-
-  int pwmf[4] = {220, 232, 232, 220};
-  int pwms[4] = {200, 210, 200, 200};
-  // int pwmf[4] = {230, 220, 220, 230};
-  // int pwms[4] = {200, 200, 200, 200};
+  //LEFT
+  // int pwmf[4] = {220, 229, 229, 220};
+  // int pwms[4] = {200, 210, 200, 200};
+  //RIGHT
+  int pwmf[4] = {240, 250, 250, 240};
+  int pwms[4] = {215, 200, 200, 200};
   
 
 Encoders encoderLeft(A15, A14);	// Create an Encoder object name leftEncoder, using digitalpin 2 & 3
@@ -53,8 +54,8 @@ bool lastSideSwitchState = HIGH;    // for edge detection
 
 //Rotor variables -------------------------------------------------------------------------
 const int enable34 = 23; // L293D pin 9
-const int input3   = 25; // L293D pin 10
-const int input4   = 24; // L293D pin 15
+const int input4   = 25; // L293D pin 10
+const int input3   = 27; // L293D pin 15
 
 // variables for GyroScope ----------------------------------------------------------------------------
 // Valores RAW (sin procesar) del acelerometro y giroscopio en los ejes x,y,z
@@ -103,12 +104,15 @@ enum side {
 }; 
 
 //conditional------------------------------------------------------------------------------------- aqui Samuel 
-const long pulses = 1020; // Number of pulses for each movement step
-side robotSide = LEFT;
+const long pulses = 1335; // Number of pulses for each movement step
+side robotSide = RIGHT;
 int lenght = 0;
 
 //servo--------------------------------------------
-int closedGate = 170;
+// int closedGate = 170;
+// int openGate = 55;
+//RIGHT
+int closedGate = 90;
 int openGate = 55;
 
 // functions-----------------------------------------------------------------------------
@@ -188,7 +192,7 @@ void setup() { //---------------------------------------------------------------
 
   Serial.begin(9600);
   if(robotSide == RIGHT){
-    lenght = 750;
+    lenght = 900;
   }else{
     lenght = 1100;
   } 
@@ -284,27 +288,31 @@ void purple();{
 }
 
 void loop() {//---------------------------------------------------------------------------------------------------------------------------------------------////
+  static int microSwitchTime = 0;
+  int currentTime = millis();
 
-  // Handle switch press
-  bool currentBackSwitchState = digitalRead(backSwitchPin);
-  if (currentBackSwitchState == LOW && lastBackSwitchState == HIGH) {
+    if (currentTime - microSwitchTime > 1000){
+    // Handle switch press
+    bool currentBackSwitchState = digitalRead(backSwitchPin);
+    if (currentBackSwitchState == LOW && lastBackSwitchState == HIGH) {
+      microSwitchTime = millis();
+      // Button pressed
+      onSwitchPress();
+      state++;
+      Serial.println("Gyro angles reset by microswitch!");
+    }
+    lastBackSwitchState = currentBackSwitchState;
 
-    // Button pressed
-    onSwitchPress();
-    state++;
-    Serial.println("Gyro angles reset by microswitch!");
+    bool currentSideSwitchState = digitalRead(sideSwitchPin);
+    if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH) {
+      microSwitchTime = millis();
+      // Button pressed
+      onSwitchPress();
+      state++;
+      Serial.println("Gyro angles reset by microswitch!");
+    }
+    lastSideSwitchState = currentSideSwitchState;
   }
-  lastBackSwitchState = currentBackSwitchState;
-
-  bool currentSideSwitchState = digitalRead(sideSwitchPin);
-  if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH) {
-
-    // Button pressed
-    onSwitchPress();
-    state++;
-    Serial.println("Gyro angles reset by microswitch!");
-  }
-  lastSideSwitchState = currentSideSwitchState;
 
 
 // MPU code
@@ -323,14 +331,16 @@ void loop() {//-----------------------------------------------------------------
     ang_z = ang_z_prev + (gz_filtered / GYRO_SENSITIVITY) * dt;
     ang_z_prev = ang_z;
     
+
+    
   
 
 
 
   //check if the robot is centered before acting---------------------------------
-  // if (ang_z >= alpha + beta) {
+  // if (ang_z >= alpha + beta && routine != 7) {
   //   routine = 8;
-  // } else if (ang_z <= alpha - beta){
+  // } else if (ang_z <= alpha - beta && routine != 7){
   //   routine = 8;
   // }
 
@@ -472,7 +482,7 @@ switch (routine) {
   case 4:
     switch(state){
       case -1:
-        if(inner(210)) state++;
+        if(inner(200)) state++;
         break;
       case 0:
         if(move.backward(mm(180))) state++;
@@ -483,11 +493,14 @@ switch (routine) {
       case 2:
         digitalWrite(enable34, HIGH);
         if (lane == MIDDLE){
-          if(move.forward(mm(lenght))) state++;
-        } else if(lane == OUTER){
-          outerForward();
-          if(move.forwardp(mm(lenght))) state++; move.moveBeginForward();
-        }
+            if(move.forward(mm(lenght))) state++;
+          } else if(lane == OUTER){
+              if (robotSide == RIGHT){
+                if(move.forwardp(mm(lenght + 50), true)) state++;  
+              }else{
+                if(move.forwardp(mm(lenght + 100), false)) state++;  
+              }
+          }
         break;
       case 3:
         if(move.stopForMillis(mili)) state++;
@@ -537,7 +550,7 @@ switch (routine) {
   case 5:
     switch(state){
       case 0:
-        if(inner(300)) state++;
+        if(inner(340)) state++;
         break;
       case 1:
         if(move.stopForMillis(mili)) state++;
@@ -549,16 +562,16 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 4:
-        if(move.forward(mm())) state++;
+        if(move.forward(mm(250))) state++;
         break;
       case 5:
         state++;
         break;
       case 6:
         if (robotSide == RIGHT){
-          if(move.forwardLeft(mm(400))) state++;
+          if(move.forwardLeft(mm(320))) state++;
         } else{
-          if(move.forwardRight(mm(400))) state++;
+          if(move.forwardRight(mm(260))) state++;
         }
         digitalWrite(LED, HIGH); 
         break;
@@ -566,7 +579,7 @@ switch (routine) {
         state++;
         break;
       case 8:
-        if(move.forward(mm(lenght/2.2 + 60))){state++;}
+        if(move.forward(mm(lenght/2 + 60))){state++;}
         break;
       case 9:
         if(move.stopForMillis(2*mili)) state++;
@@ -594,7 +607,7 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 2:
-        if(outer(400)) state++;
+        if(outer(450)) state++;
         break;
       case 3:
         if(move.stopForMillis(mili)) state++;
@@ -653,18 +666,17 @@ switch (routine) {
         digitalWrite(LED, LOW);
         break;
       case 6:
-        if(outer(mm(200))) state++;
+        if(outer(mm(40))) state++;
         break;
       case 7:
         if(move.stopForMillis(mili/2)) state++;
         break;
       case 8:
-          // if (robotSide == RIGHT){
-          //   move.begin(pwmf[1] + 20, pwmf[2], pwmf[3], pwmf[4] + 20);  
-          // }else if (robotSide == LEFT){
-          //   move.begin(pwmf[1], pwmf[2] + 80, pwmf[3] + 80, pwmf[4]);  
-          // }
-          if(move.forward(mm(550))) state++;  
+          if (robotSide == RIGHT){
+            if(move.forwardp(mm(550), true)) state++;  
+          }else{
+            if(move.forwardp(mm(550), false)) state++;  
+          }
         break;
       case 9:
         digitalWrite(enable34, HIGH);
@@ -720,6 +732,18 @@ switch (routine) {
         lane = OUTER;
     }
   break;
+  case 8:
+    alpha = 0;
+    if (ang_z >= alpha + beta) {
+        move.rotateCCW(200, 200, 200, 200);
+    } else if (ang_z <= alpha - beta) {
+        move.rotateCW(200, 200, 200, 200);
+    } else {
+        routine = 7;
+        state = 0;
+    }
+
+
   case 10:
     move.stop();
     switch(state){
@@ -756,7 +780,7 @@ switch (routine) {
         break;
     }
     break;
-  // case 8:
+  
 } 
 
 
