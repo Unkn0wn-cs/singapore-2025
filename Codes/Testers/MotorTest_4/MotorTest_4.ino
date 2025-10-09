@@ -37,7 +37,7 @@ void loop() {
   motor4.run(FORWARD);
 
   // Accelerate
-  for (i = 0; i < 255; i++) {
+  for (i = 0; i < 150; i++) {
     motor1.setSpeed(i);
     motor2.setSpeed(i);
     motor3.setSpeed(i);
@@ -46,7 +46,7 @@ void loop() {
   }
 
   // Decelerate
-  for (i = 255; i != 0; i--) {
+  for (i = 150; i != 0; i--) {
     motor1.setSpeed(i);
     motor2.setSpeed(i);
     motor3.setSpeed(i);

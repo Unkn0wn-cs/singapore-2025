@@ -16,11 +16,11 @@ AF_DCMotor motor2(2); // Motor 2 on the Adafruit Motor Shield
 AF_DCMotor motor3(3); // Motor 3 on the Adafruit Motor Shield
 AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
   //LEFT
-  // int pwmf[4] = {220, 229, 229, 220};
-  // int pwms[4] = {200, 210, 200, 200};
+  int pwmf[4] = {220, 232, 232, 220};
+  int pwms[4] = {200, 210, 200, 200};
   //RIGHT
-  int pwmf[4] = {240, 250, 250, 240};
-  int pwms[4] = {215, 200, 200, 200};
+  // int pwmf[4] = {230, 235, 235, 230};
+  // int pwms[4] = {215, 200, 200, 200};
   
 
 Encoders encoderLeft(A15, A14);	// Create an Encoder object name leftEncoder, using digitalpin 2 & 3
@@ -45,7 +45,9 @@ int redSignature = 3;
 // --- Microswitch Gyro Reset Extension ----------------------------------------------------------------
 
 const byte backSwitchPin = 18; // For interrupt on Mega
-const byte sideSwitchPin = 19; // For interrupt on Mega
+// const byte sideSwitchPin = 19; // For interrupt on Mega
+const byte sideSwitchPin = A5; // For interrupt on Mega
+
 
 volatile bool backSwitchPressed = false;
 volatile bool sideSwitchPressed = false;
@@ -104,16 +106,16 @@ enum side {
 }; 
 
 //conditional------------------------------------------------------------------------------------- aqui Samuel 
-const long pulses = 1335; // Number of pulses for each movement step
-side robotSide = RIGHT;
+const long pulses = 1020; // Number of pulses for each movement step
+side robotSide = LEFT;
 int lenght = 0;
 
 //servo--------------------------------------------
-// int closedGate = 170;
-// int openGate = 55;
-//RIGHT
-int closedGate = 90;
+int closedGate = 170;
 int openGate = 55;
+//RIGHT
+// int closedGate = 90;
+// int openGate = 55;
 
 // functions-----------------------------------------------------------------------------
 
@@ -290,29 +292,27 @@ void purple();{
 void loop() {//---------------------------------------------------------------------------------------------------------------------------------------------////
   static int microSwitchTime = 0;
   int currentTime = millis();
-
-    if (currentTime - microSwitchTime > 1000){
-    // Handle switch press
     bool currentBackSwitchState = digitalRead(backSwitchPin);
-    if (currentBackSwitchState == LOW && lastBackSwitchState == HIGH) {
-      microSwitchTime = millis();
-      // Button pressed
-      onSwitchPress();
-      state++;
-      Serial.println("Gyro angles reset by microswitch!");
+    bool currentSideSwitchState = digitalRead(sideSwitchPin);
+
+
+    if (currentTime - microSwitchTime > 500){
+      // Handle switch press
+      if (currentBackSwitchState == LOW && lastBackSwitchState == HIGH) {
+        microSwitchTime = millis();
+        // Button pressed
+        onSwitchPress();
+        state++;
+        Serial.println("Gyro angles reset by microswitch!");
+      }
+      if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH && routine!= 4) {
+        microSwitchTime = millis();
+        // Button pressed
+        state++;
+      }
     }
     lastBackSwitchState = currentBackSwitchState;
-
-    bool currentSideSwitchState = digitalRead(sideSwitchPin);
-    if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH) {
-      microSwitchTime = millis();
-      // Button pressed
-      onSwitchPress();
-      state++;
-      Serial.println("Gyro angles reset by microswitch!");
-    }
     lastSideSwitchState = currentSideSwitchState;
-  }
 
 
 // MPU code
@@ -506,6 +506,9 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 4:
+        if(move.stopForMillis(mili)) state++;
+        break;
+      case 5:
         if (robotSide == RIGHT && first == false){
           if (lane == OUTER){
             lane = MIDDLE;
@@ -556,7 +559,7 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 2:
-        if(move.backward(300)) state++;
+        if(move.backward(600)) state++;
         break;
       case 3:
         if(move.stopForMillis(mili)) state++;
@@ -569,7 +572,7 @@ switch (routine) {
         break;
       case 6:
         if (robotSide == RIGHT){
-          if(move.forwardLeft(mm(320))) state++;
+          if(move.forwardLeft(mm(380))) state++;
         } else{
           if(move.forwardRight(mm(260))) state++;
         }
@@ -601,13 +604,13 @@ switch (routine) {
   case 6:
     switch(state){
       case 0:
-        if(move.backward(mm(lenght + 60))) state++;
+        if(move.backward(mm(lenght + 250))) state++;
         break;
       case 1:
         if(move.stopForMillis(mili)) state++;
         break;
       case 2:
-        if(outer(450)) state++;
+        if(outer(550)) state++;
         break;
       case 3:
         if(move.stopForMillis(mili)) state++;
@@ -629,7 +632,7 @@ switch (routine) {
    
     switch(state){
       case 0:
-        if(move.backward(mm(lenght + 100))) state++;
+        if(move.backward(mm(lenght + 250))) state++;
         break;
       case 1:
         if(move.stopForMillis(mili)) state++;
@@ -698,8 +701,8 @@ switch (routine) {
         // } if (time + 1200 < millis()) state++;
 
         if (robotSide == LEFT){
-          alpha = 25;
-        } else {alpha  = -25;}
+          alpha = 10;
+        } else {alpha  = 10;}
 
 
         if (ang_z >= alpha + beta) {
