@@ -47,7 +47,7 @@ Move move(motor1, motor2, motor3, motor4, encoderLeft, encoderRight);
 
 void setup()
 {
-  move.begin(250,250,250,250); //dfine the power
+  move.begin(200,200,200,200); //dfine the power
   Serial.begin(115200);
   Serial.print("Starting...\n");
   pixy.init();
@@ -104,7 +104,7 @@ void loop()
 
       } else if (x < 240 && x > 140){
               pixy.ccc.blocks[i].print();
-              move.simpleForward();
+              move.stop();
 
     } 
     }else{

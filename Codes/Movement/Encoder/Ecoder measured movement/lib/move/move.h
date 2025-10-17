@@ -103,6 +103,38 @@ class Move {
       return checkDoneWithTimeout(pulses);
     }
 
+    bool backwardp(long pulses, bool position) {
+    int d = 15;
+    if (position == false){
+      begin(pwmFwd1 + d, pwmFwd2, pwmFwd3, pwmFwd4 + d);  
+    }else{
+      begin(pwmFwd1 - d, pwmFwd2, pwmFwd3 ,pwmFwd4 - d);  
+    }
+    
+    if (!moving) {
+      startMove();
+      moveStartTime = millis();
+    }
+    setMotors(BACKWARD , BACKWARD, BACKWARD, BACKWARD);
+    return checkDoneWithTimeout(pulses);
+  }
+
+    bool forwardq(long pulses, bool position) {
+    int d = 15;
+    if (position == false){
+      begin(pwmFwd1, pwmFwd2 + d, pwmFwd3 + d, pwmFwd4);  
+    }else{
+      begin(pwmFwd1, pwmFwd2 - d, pwmFwd3 - d, pwmFwd4);  
+    }
+    
+    if (!moving) {
+      startMove();
+      moveStartTime = millis();
+    }
+    setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
+    return checkDoneWithTimeout(pulses);
+  }
+
         // Forward
     bool forward(long pulses) {
       if (!moving) {
@@ -186,6 +218,24 @@ class Move {
       setMotors(RELEASE, BACKWARD, RELEASE, BACKWARD);
       return checkDone(pulses);
     }
+
+
+    bool rotate(long pulses, bool side) {
+      if (!moving) {
+        moveBeginStrafe();
+        startMove();
+      }
+
+      if (side == true){
+        setMotors(FORWARD, BACKWARD, BACKWARD, FORWARD);
+      } else {
+        setMotors(BACKWARD, FORWARD, FORWARD, BACKWARD);
+      }
+
+      return checkDone(pulses);
+    }
+
+
 
     // Rotation (not encoder regulated)  
     void rotateCW(int pwm, int pwm2, int pwm3, int pwm4) {

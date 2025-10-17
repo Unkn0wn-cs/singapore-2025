@@ -19,7 +19,7 @@ AF_DCMotor motor4(4); // Motor 4 on the Adafruit Motor Shield
   int pwmf[4] = {220, 232, 232, 220};
   int pwms[4] = {200, 210, 200, 200};
   //RIGHT
-  // int pwmf[4] = {230, 235, 235, 230};
+  // int pwmf[4] = {233, 238, 238, 233};
   // int pwms[4] = {215, 200, 200, 200};
   
 
@@ -45,8 +45,7 @@ int redSignature = 3;
 // --- Microswitch Gyro Reset Extension ----------------------------------------------------------------
 
 const byte backSwitchPin = 18; // For interrupt on Mega
-// const byte sideSwitchPin = 19; // For interrupt on Mega
-const byte sideSwitchPin = A5; // For interrupt on Mega
+const byte sideSwitchPin = 19; // For interrupt on Mega
 
 
 volatile bool backSwitchPressed = false;
@@ -106,6 +105,7 @@ enum side {
 }; 
 
 //conditional------------------------------------------------------------------------------------- aqui Samuel 
+// const long pulses = 1650; // Number of pulses for each movement step
 const long pulses = 1020; // Number of pulses for each movement step
 side robotSide = LEFT;
 int lenght = 0;
@@ -115,7 +115,7 @@ int closedGate = 170;
 int openGate = 55;
 //RIGHT
 // int closedGate = 90;
-// int openGate = 55;
+// int openGate = 0;
 
 // functions-----------------------------------------------------------------------------
 
@@ -194,7 +194,7 @@ void setup() { //---------------------------------------------------------------
 
   Serial.begin(9600);
   if(robotSide == RIGHT){
-    lenght = 900;
+    lenght = 720;
   }else{
     lenght = 1100;
   } 
@@ -243,8 +243,11 @@ void purple();{
     pixy.ccc.getBlocks();
     if (pixy.ccc.numBlocks > 0) {
       for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-        if (pixy.ccc.blocks[i].m_signature == purpleSignature && pixy.ccc.blocks[i].m_age > 85) {
-
+        if (pixy.ccc.blocks[i].m_signature == purpleSignature &&
+            pixy.ccc.blocks[i].m_age > 85 &&
+            pixy.ccc.blocks[i].m_x > 105 && pixy.ccc.blocks[i].m_x < 300 &&
+            pixy.ccc.blocks[i].m_y > 15 && pixy.ccc.blocks[i].m_y < 100) {
+              
           int ix = pixy.ccc.blocks[i].m_x; 
           int iy = pixy.ccc.blocks[i].m_y;
           //definir routine 
@@ -313,6 +316,16 @@ void loop() {//-----------------------------------------------------------------
     }
     lastBackSwitchState = currentBackSwitchState;
     lastSideSwitchState = currentSideSwitchState;
+
+    static bool lastRoutine = false;
+    if (lastRoutine == false && millis() > 105000 && routine != 7){
+      lastRoutine = true;
+
+      routine = 6;
+      state = 0;
+      lane = INNER;
+       
+    }
 
 
 // MPU code
@@ -509,6 +522,11 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 5:
+
+        if (lane == OUTER){
+          state = -1;
+        } else{state = 0;}
+
         if (robotSide == RIGHT && first == false){
           if (lane == OUTER){
             lane = MIDDLE;
@@ -546,7 +564,6 @@ switch (routine) {
         // }
 
         routine = 6;
-        state = 0;      
       break;
     }
   break;
@@ -582,14 +599,18 @@ switch (routine) {
         state++;
         break;
       case 8:
-        if(move.forward(mm(lenght/2 + 60))){state++;}
+        if(move.forward(mm(lenght/2 + 30))){state++;}
         break;
       case 9:
         if(move.stopForMillis(2*mili)) state++;
         digitalWrite(LED, LOW);
         break;
       case 10:
-        if(outer(50)) state++;
+        if (robotSide == LEFT){
+          if(outer(50)) state++;
+        } else{
+          state++;
+        }
         break;
       case 11:
         if(move.stopForMillis(mili)) state++;
@@ -603,6 +624,13 @@ switch (routine) {
     break;
   case 6:
     switch(state){
+      case -1:
+        if (robotSide == RIGHT){
+          if(move.backwardp(mm(lenght + 50), true)) state++;  
+        }else{
+          if(move.backwardp(mm(lenght + 100), false)) state++;  
+        }
+        break;
       case 0:
         if(move.backward(mm(lenght + 250))) state++;
         break;
