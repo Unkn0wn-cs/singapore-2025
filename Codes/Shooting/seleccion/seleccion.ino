@@ -5,6 +5,7 @@ const int NUM_FRANJAS = 3;
 const int ANCHO_IMAGEN = 316; // Pixy2 horizontal resolution
 int pesos[NUM_FRANJAS] = {0};
 
+
 int classifyLane(float x, float y, bool right) {
     // Define the two diagonal boundaries
     float mA, mB, bA, bB;

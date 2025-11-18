@@ -1,4 +1,4 @@
-//this code was designed as part of the 2025 wworld robotics competition by team Outer heaven competing in rbo sports
+//this code was designed as part of the 2025 world robotics competition by team Outer heaven competing in robo sports
 //this code is meant to be used with the adafruit motor shield v1 and quadrature encoders of 4 omnidirectional 45d degree wheels
 // connected in sequence as top view
 
@@ -13,7 +13,7 @@
 
 class Move {
   public:
-    unsigned long moveTimeoutMs = 4000; 
+    unsigned long moveTimeoutMs = 2300; 
 
     // PWM values for forward/backward
     int pwmFwd1, pwmFwd2, pwmFwd3, pwmFwd4;
@@ -87,8 +87,8 @@ class Move {
       motor4.run(BACKWARD);
     }
 
-    bool forwardp(long pulses, bool position) {
-      int d = 15;
+    int forwardp(long pulses, bool position) {
+      int d = 8;
       if (position == false){
         begin(pwmFwd1 + d, pwmFwd2, pwmFwd3, pwmFwd4 + d);  
       }else{
@@ -100,7 +100,12 @@ class Move {
         moveStartTime = millis();
       }
       setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
-      return checkDoneWithTimeout(pulses);
+      if (checkDoneWithTimeout(pulses)){
+        return 1;
+      } else if (checkDoneWithTimeout(pulses / 2, true)){
+        return 2;
+      } else {return 0;}
+      ;
     }
 
     bool backwardp(long pulses, bool position) {
@@ -337,11 +342,13 @@ bool accelerateToPWM(int initialPWM, int targetPWM, int steps = 20, unsigned lon
 
 
   // New: checkDone with timeout
-    bool checkDoneWithTimeout(long pulses) {
+    bool checkDoneWithTimeout(long pulses, bool far = false) {
       long deltaLeft = abs(encoderLeft.getEncoderCount() - startLeft);
       long deltaRight = abs(encoderRight.getEncoderCount() - startRight);
       if (deltaLeft >= pulses || deltaRight >= pulses) {
-        stop();
+        if (!far){
+          stop();
+        }
         return true;
       }
       if (millis() - moveStartTime > moveTimeoutMs) {
