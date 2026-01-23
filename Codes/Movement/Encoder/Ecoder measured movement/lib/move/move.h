@@ -13,7 +13,7 @@
 
 class Move {
   public:
-    unsigned long moveTimeoutMs = 2300; 
+    unsigned long moveTimeoutMs = 3000; 
 
     // PWM values for forward/backward
     int pwmFwd1, pwmFwd2, pwmFwd3, pwmFwd4;
@@ -147,6 +147,37 @@ class Move {
         startMove();
         moveStartTime = millis();
       }
+
+
+      setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
+      return checkDoneWithTimeout(pulses);
+    }
+
+    //forward accelerated
+    bool forwarda(long pulses) {
+      static int d = 80;
+      static int a = 80;
+      if (!moving) {
+        begin(pwmFwd1 - d, pwmFwd2 - d, pwmFwd3 - d, pwmFwd4 - d);
+        startMove();
+        moveStartTime = millis();
+      }
+      if (d > 0){
+        begin(pwmFwd1 - d, pwmFwd2 - d, pwmFwd3 - d, pwmFwd4 - d);
+        d = d - 5;
+      }
+      
+      static bool decel = false;
+      if (checkDoneWithTimeout(pulses - (pulses)/10, true)){
+        decel = true;
+      }
+
+      if (decel || d < a){
+        begin(pwmFwd1 - d, pwmFwd2 - d, pwmFwd3 - d, pwmFwd4 - d);
+        d = d + 10;
+      }
+
+
       setMotors(FORWARD, FORWARD, FORWARD, FORWARD);
       return checkDoneWithTimeout(pulses);
     }

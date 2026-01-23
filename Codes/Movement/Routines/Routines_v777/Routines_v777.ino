@@ -605,7 +605,7 @@ switch (routine) {
       case 2:
           // enableDrivers();        
           if (lane == MIDDLE){
-            if(move.forward(mm(lenght))) state++;
+            if(move.forwarda(mm(lenght))) state++;
           } else if(lane == OUTER){
               if (robotSide == RIGHT){
                 int test = move.forwardp(mm(lenght + 50), true);
@@ -696,7 +696,7 @@ switch (routine) {
         break;
       case 8:
         if (robotSide == RIGHT){
-          if(move.forwardq(mm(lenght/3 + 110), true)){state++;}
+          if(move.forwardq(mm(lenght/3 + 150), true)){state++;}
         } else {
           if(move.forwardq(mm(lenght/2 + 160), false)){state++;}
         }
