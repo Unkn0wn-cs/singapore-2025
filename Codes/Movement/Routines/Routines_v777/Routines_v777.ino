@@ -92,7 +92,7 @@ int gx, gy, gz;
 //
 
 //---------------------------------
-static int routine = 4;
+static routine_id routine = ROUTINE_SIMPLE_LANES;
 int state = 0;
 bool first = true;
 
@@ -116,7 +116,21 @@ enum rlane {
 enum side {
   RIGHT,
   LEFT
-}; 
+};
+
+enum routine_id {
+  ROUTINE_BALL_TOP_LEFT,      // 0 - bola esquina superior izq
+  ROUTINE_BALL_TOP_RIGHT,     // 1
+  ROUTINE_BALL_BOTTOM_LEFT,   // 2
+  ROUTINE_BALL_BOTTOM_RIGHT,  // 3
+  ROUTINE_SIMPLE_LANES,       // 4
+  ROUTINE_DIAGONAL_LANE,      // 5
+  ROUTINE_RESET,              // 6
+  ROUTINE_CORNER_CHECK,       // 7
+  ROUTINE_REORIENT,           // 8
+  ROUTINE_FINAL_STRAFE,       // 9
+  ROUTINE_DEBUG               // 10
+};
 
 //conditional------------------------------------------------------------------------------------- aqui Samuel 
 // const long pulses = 1650; // Number of pulses for each movement step
@@ -336,25 +350,25 @@ if (pixy.ccc.numBlocks > 0) {
       int iy = pixy.ccc.blocks[j].m_y;
       //definir routine 
       if (ix < center_x && iy < center_y){
-        routine = 0;
+        routine = ROUTINE_BALL_TOP_LEFT;
         pixy.ccc.blocks[j].print();
         // blink();
         Serial.print("upper left corner, case 1");
         return;
       } else if (ix > center_x && iy < center_y){
-        routine = 1;
+        routine = ROUTINE_BALL_TOP_RIGHT;
         pixy.ccc.blocks[j].print();
         // blink(); blink();
         Serial.print("upper right corner, case 3");
         return;
       } else if (ix < center_x && iy > center_y){
-        routine = 2;
+        routine = ROUTINE_BALL_BOTTOM_LEFT;
         pixy.ccc.blocks[j].print();
         // blink(); blink(); blink();
         Serial.print("lower left corner, case 0");
         return;
       } else if (ix > center_x && iy > center_y){
-        routine = 3;
+        routine = ROUTINE_BALL_BOTTOM_RIGHT;
         pixy.ccc.blocks[j].print();
         // blink(); blink(); blink(); blink();
         Serial.print("lower Right corner, case 2");
@@ -392,12 +406,12 @@ void loop() {//-----------------------------------------------------------------
         microSwitchTime = millis();
         // Button pressed
         onSwitchPress();
-        if (!(routine == 6 && state == 2)){
+        if (!(routine == ROUTINE_RESET && state == 2)){
           state++;
         }
         Serial.println("Gyro angles reset by microswitch!");
       }
-      if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH && routine!= 4  && !(routine == 7 && state == 8)  ) {
+      if (currentSideSwitchState == LOW && lastSideSwitchState == HIGH && routine != ROUTINE_SIMPLE_LANES && !(routine == ROUTINE_CORNER_CHECK && state == 8)) {
         microSwitchTime = millis();
         // Button pressed
         state++;
@@ -410,7 +424,7 @@ void loop() {//-----------------------------------------------------------------
 
     // Last Routine Code ----------------------------------------------
     static bool lastRoutine = false;
-    // if (lastRoutine == false &&  (millis() > 105000 + startTime) && (routine != 7 || routine != 5)){
+    // if (lastRoutine == false &&  (millis() > 105000 + startTime) && (routine != ROUTINE_CORNER_CHECK || routine != ROUTINE_DIAGONAL_LANE)){
     //   lastRoutine = true;
     //   lane = INNER;
     //   lenght -= 30;
@@ -450,10 +464,10 @@ void loop() {//-----------------------------------------------------------------
 
 
   //check if the robot is centered before acting---------------------------------
-  // if (ang_z >= alpha + beta && routine != 7) {
-  //   routine = 8;
-  // } else if (ang_z <= alpha - beta && routine != 7){
-  //   routine = 8;
+  // if (ang_z >= alpha + beta && routine != ROUTINE_CORNER_CHECK) {
+  //   routine = ROUTINE_REORIENT;
+  // } else if (ang_z <= alpha - beta && routine != ROUTINE_CORNER_CHECK){
+  //   routine = ROUTINE_REORIENT;
   // }
 
     // routine 0-3 = case 0-3 ball 
@@ -466,7 +480,7 @@ void loop() {//-----------------------------------------------------------------
 
 
 switch (routine) {
-  case 0:
+  case ROUTINE_BALL_TOP_LEFT:
     switch(state){
       case 0:
         if(move.backward(mm(100))) state++;
@@ -491,13 +505,13 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 6:
-        routine = 6; state = 0;
+        routine = ROUTINE_RESET; state = 0;
         if (robotSide == RIGHT){
           lane = OUTER;
         } else {lane = INNER;}
       }
     break;
-  case 1:
+  case ROUTINE_BALL_TOP_RIGHT:
     switch(state){
       case 0:
         if (move.right(mm(180))) state++;
@@ -525,11 +539,11 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break;
       case 7:
-        routine = 6; state = 0;
+        routine = ROUTINE_RESET; state = 0;
         lane = MIDDLE;
       }
     break;
-  case 2:
+  case ROUTINE_BALL_BOTTOM_LEFT:
     switch(state){
       case 0:
         if(move.backward(mm(100))) state++;
@@ -550,13 +564,13 @@ switch (routine) {
         if(move.forward(mm(250))) state++;
         break;
       case 5:
-        routine = 6; state = 0;
+        routine = ROUTINE_RESET; state = 0;
         if (robotSide == RIGHT){
           lane = OUTER;
         } else {lane = INNER;}
     }
     break;
-  case 3:
+  case ROUTINE_BALL_BOTTOM_RIGHT:
     switch(state){
       case 0:
         if(move.right(mm(180))) state++;
@@ -580,7 +594,7 @@ switch (routine) {
         if(move.forward(mm(250))) state++;
         break;
       case 6:
-        routine = 6; state = 0;
+        routine = ROUTINE_RESET; state = 0;
         lane = MIDDLE;
     }
     break;
@@ -591,7 +605,7 @@ switch (routine) {
 
 
   ////-------------------------------LOOOP-----------------------------------------------------------////
-  case 4:
+  case ROUTINE_SIMPLE_LANES:
     switch(state){
       case -1:
         if(outer(200)) state++;
@@ -653,16 +667,16 @@ switch (routine) {
             return(1);
           }
         }
-        routine = 6;
+        routine = ROUTINE_RESET;
 
         if (lastRoutine == true){
-          routine  = 9;
+          routine = ROUTINE_FINAL_STRAFE;
           state = 0;
         }
       break;
     }
   break;
-  case 5:
+  case ROUTINE_DIAGONAL_LANE:
     enableDrivers();  
     switch(state){
       case 0:
@@ -717,12 +731,12 @@ switch (routine) {
         break;
       case 12:
         lane = OUTER;
-        routine = 7;
+        routine = ROUTINE_CORNER_CHECK;
         state = 0;
         break;
     }
     break;
-  case 6:
+  case ROUTINE_RESET:
     switch(state){
       case -1:
         if (robotSide == RIGHT){
@@ -824,18 +838,18 @@ switch (routine) {
           }
 
           if(lane == INNER){
-            routine = 5;
+            routine = ROUTINE_DIAGONAL_LANE;
             state = 0;
           }else if(lane == MIDDLE){
-            routine = 4;
+            routine = ROUTINE_SIMPLE_LANES;
             state = 0;
           }else if(lane == OUTER){
-            routine = 4;
+            routine = ROUTINE_SIMPLE_LANES;
             state = -1;
         }
 
         if (lastRoutine == true){
-          routine = 5;
+          routine = ROUTINE_DIAGONAL_LANE;
           state = 0;
           
         }
@@ -844,7 +858,7 @@ switch (routine) {
         
     }
   break;
-  case 7:
+  case ROUTINE_CORNER_CHECK:
     connections = 0;
     switch(state){
       case 0:
@@ -957,23 +971,23 @@ switch (routine) {
         if(move.stopForMillis(mili)) state++;
         break; 
       case 18:
-        routine = 4;
+        routine = ROUTINE_SIMPLE_LANES;
         state = 0;
         lane = OUTER;
     }
   break;
-  case 8:
+  case ROUTINE_REORIENT:
     alpha = 0;
     if (ang_z >= alpha + beta) {
         move.rotateCCW(200, 200, 200, 200);
     } else if (ang_z <= alpha - beta) {
         move.rotateCW(200, 200, 200, 200);
     } else {
-        routine = 7;
+        routine = ROUTINE_CORNER_CHECK;
         state = 0;
     }
 
-  case 9:
+  case ROUTINE_FINAL_STRAFE:
     move.moveBeginStrafe();
     pixy.ccc.getBlocks();
     if (robotSide == LEFT){
@@ -1033,12 +1047,12 @@ switch (routine) {
         }
       } delay(5);
     }else {
-      routine = 10;
+      routine = ROUTINE_DEBUG;
       state = 0;
     }   
     break;
 
-  case 10:
+  case ROUTINE_DEBUG:
     switch(state){
       case 0:
         if(move.backward(mm(15))) state++;
@@ -1054,4 +1068,5 @@ switch (routine) {
 
 
   delay(5); //delay for stability introduced july 😝
+  //???? eres marico?
 }
